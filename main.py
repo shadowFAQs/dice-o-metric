@@ -1,6 +1,6 @@
 import pygame as pg
 
-from const import Color, BOARD_OFFSET, SCREEN_SIZE
+from const import Color, SCREEN_SIZE
 from dice import Dice
 from game import Game
 
@@ -24,7 +24,7 @@ def main():
 
         # Draw small screen
         screen.fill(color.black)
-        screen.blit(game.board.image, BOARD_OFFSET)
+        screen.blit(game.board.image, game.board.offset)
         # Double and draw 2x screen
         screen_2x.fill(color.black)
         pg.transform.scale2x(screen, screen_2x)

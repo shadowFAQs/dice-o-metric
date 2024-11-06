@@ -1,36 +1,38 @@
 from itertools import chain
+from pathlib import Path
 from random import randint
 
 import pygame as pg
 
-from const import Color, BOARD_INNER_OFFSET, DIE_SPRITE_SIZE, SCREEN_SIZE, \
-                  TILE_SIZE
+from const import Color, BOARD_INNER_OFFSET, DIE_GAP, DIE_SPRITE_SIZE, \
+                  SCREEN_SIZE, TILE_SIZE
 from dice import Dice
 from image import SpriteSheet
 
 
 class Board(pg.sprite.Sprite):
-    def __init__(self, dimensions: tuple[int], sprite_sheet: SpriteSheet):
+    def __init__(self, sprite_sheet: SpriteSheet):
         pg.sprite.Sprite.__init__(self)
 
-        self.num_cols = dimensions[0]
-        self.num_rows = dimensions[1]
+        self.num_cols = 8
+        self.num_rows = 8
         self.sprite_sheet = sprite_sheet
 
-        self.color = Color()
+        self.color     = Color()
         self.dice      = []
         self.heightmap = []
+        self.offset    = pg.math.Vector2(8, 8)
 
-        self.image = pg.Surface(
-            (DIE_SPRITE_SIZE.x * self.num_cols + BOARD_INNER_OFFSET.x * 2,
-             SCREEN_SIZE.y / 2 - TILE_SIZE.y * 2)
-        )
-        self.rect = self.image.get_rect()
+        self.background_image = pg.image.load(Path('img') / 'bg.bmp')
+        self.rect = self.background_image.get_rect()
+        self.image = pg.Surface(self.rect.size, pg.SRCALPHA)
+
 
         self.spawn_dice()
 
     def draw(self):
-        self.image.fill(self.color.red)
+        self.image.fill(self.color.black)
+        self.image.blit(self.background_image, (0, 0))
 
         for row in range(self.num_rows):
             for col in range(self.num_cols - 1, -1, -1):
@@ -46,10 +48,11 @@ class Board(pg.sprite.Sprite):
         Translates row & col into pixel position
         on an isometric map
         """
-        x_step = TILE_SIZE.x / 2
-        y_step = TILE_SIZE.y / 2
+        x_step = TILE_SIZE.x / 2 + DIE_GAP
+        y_step = TILE_SIZE.y / 2 + DIE_GAP
 
-        x, y = DIE_SPRITE_SIZE.x, self.rect.height - DIE_SPRITE_SIZE.y * 3
+        x = (self.rect.width - (DIE_SPRITE_SIZE.x * 8 + 14 * DIE_GAP)) // 2
+        y = self.rect.height - DIE_SPRITE_SIZE.y * 3
         x += x_step * col
         y -= y_step * col
         x += x_step * row
