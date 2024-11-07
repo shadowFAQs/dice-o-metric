@@ -8,4 +8,4 @@ class Game():
         self.board = Board(sprite_sheet=self.sprite_sheet)
 
     def update(self):
-        self.board.update(self.sprite_sheet)
+        self.board.update()

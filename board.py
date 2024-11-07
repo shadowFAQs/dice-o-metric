@@ -3,10 +3,15 @@ from pathlib import Path
 from random import randint
 
 import pygame as pg
+from shapely import Point, Polygon
 
 from const import Color, DIE_SPRITE_SIZE, SCREEN_SIZE, TILE_GAP, TILE_SIZE
 from dice import Dice
 from image import SpriteSheet
+
+
+def _transform_by_coords(x: int, y: int, coords: tuple[int]) -> tuple[int]:
+    return x + coords[0], y + coords[1]
 
 
 class Board(pg.sprite.Sprite):
@@ -37,7 +42,7 @@ class Board(pg.sprite.Sprite):
         for row in range(self.num_rows):
             for col in range(self.num_cols - 1, -1, -1):
                 die = self.dice[row][col]
-                self.image.blit(die.image, die.coords - (0, die.height))
+                self.image.blit(die.image, die.coords - (0, die.get_height()))
 
         if self.show_selection:
             self.image.blit(self.sprite_sheet.selection, self.selection_coords)
@@ -63,15 +68,22 @@ class Board(pg.sprite.Sprite):
 
         return pg.math.Vector2(x, y)
 
-    def highlight_hovered_die(self, position: tuple[int]):
-        die_top = pg.Rect(0, 0, 32, 17)
-        for die in self.get_all_dice():
-            if die_top.move(die.coords).collidepoint(position):
-                self.selection_coords = die.coords + (0, -3)  # TODO: Why offset
-                self.show_selection = True
-                return
-        else:
-            self.show_selection = False
+    def highlight_hovered_die(self):
+        self.show_selection = False
+
+        mouse_pos = (pg.mouse.get_pos() - self.offset) / 2  + (-4, -4)
+        if self.rect.collidepoint(mouse_pos):
+            mouse_point = Point(mouse_pos)
+
+            for die in self.get_all_dice():
+                hitbox = Polygon(
+                    (die.coords + (0, 8), die.coords + (15, 0),
+                     die.coords + (31, 8), die.coords + (15, 16))
+                )
+                if hitbox.contains(mouse_point):
+                    self.selection_coords = die.coords
+                    self.show_selection = True
+                    return
 
     def spawn_dice(self):
         self.dice = []
@@ -80,15 +92,17 @@ class Board(pg.sprite.Sprite):
         for row in range(self.num_rows):
             dice_row = []
             for col in range(self.num_cols):
+                animation_delay = row * 5 + col * 2 + randint(0, 8)
                 value = randint(0, 6)
-                starting_height = 200 + row * 128 + col * 32 + randint(0, 64)
                 image = self.sprite_sheet.dice[value]
                 coords = self.get_die_coords(row, col)
-                dice_row.append(Dice(value, coords, starting_height, image))
+                dice_row.append(Dice(value, coords, animation_delay, image))
 
             self.dice.append(dice_row)
 
-    def update(self, images: dict):
+    def update(self):
+        self.highlight_hovered_die()
+
         for die in self.get_all_dice():
             die.update()
 
