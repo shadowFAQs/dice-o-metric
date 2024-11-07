@@ -20,6 +20,11 @@ def main():
             if event.type == pg.QUIT:
                 running = False
 
+        mouse_pos = pg.mouse.get_pos()
+        # if game.board.rect.collidepoint(mouse_pos):
+        game.board.highlight_hovered_die(
+            (mouse_pos - game.board.offset) / 2 + (0, -3))  # TODO: Why offset??
+
         game.update()
 
         # Draw small screen
