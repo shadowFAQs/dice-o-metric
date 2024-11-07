@@ -26,14 +26,21 @@ class Board(pg.sprite.Sprite):
         self.dice             = []
         self.heightmap        = []
         self.offset           = pg.math.Vector2(8, 8)
+        self.highlight_coords = pg.math.Vector2(0, 0)
+        self.selected_die     = None
         self.selection_coords = pg.math.Vector2(0, 0)
-        self.show_selection   = True
+        self.show_highlight   = False
+        self.show_selection   = False
 
         self.background_image = pg.image.load(Path('img') / 'bg.bmp')
         self.rect = self.background_image.get_rect()
         self.image = pg.Surface(self.rect.size, pg.SRCALPHA)
 
         self.spawn_dice()
+
+    def deselect(self):
+        self.show_selection = False
+        self.selected_die = None
 
     def draw(self):
         self.image.fill(self.color.black)
@@ -43,6 +50,9 @@ class Board(pg.sprite.Sprite):
             for col in range(self.num_cols - 1, -1, -1):
                 die = self.dice[row][col]
                 self.image.blit(die.image, die.coords - (0, die.get_height()))
+
+        if self.show_highlight:
+            self.image.blit(self.sprite_sheet.highlight, self.highlight_coords)
 
         if self.show_selection:
             self.image.blit(self.sprite_sheet.selection, self.selection_coords)
@@ -68,10 +78,8 @@ class Board(pg.sprite.Sprite):
 
         return pg.math.Vector2(x, y)
 
-    def highlight_hovered_die(self):
-        self.show_selection = False
-
-        mouse_pos = (pg.mouse.get_pos() - self.offset) / 2  + (-4, -4)
+    def get_hovered_die(self) -> Dice | None:
+        mouse_pos = self.get_mouse_pos()
         if self.rect.collidepoint(mouse_pos):
             mouse_point = Point(mouse_pos)
 
@@ -81,9 +89,39 @@ class Board(pg.sprite.Sprite):
                      die.coords + (31, 8), die.coords + (15, 16))
                 )
                 if hitbox.contains(mouse_point):
-                    self.selection_coords = die.coords
-                    self.show_selection = True
-                    return
+                    return die
+
+        return None
+
+    def get_mouse_pos(self) -> pg.math.Vector2:
+        return (
+            pg.mouse.get_pos() - self.offset) / 2 - (TILE_GAP * 2, TILE_GAP * 2)
+
+    def highlight_hovered_die(self):
+        self.show_highlight = False
+
+        die = self.get_hovered_die()
+        if die:
+            self.highlight_coords = die.coords
+            self.show_highlight = True
+
+    def select(self, die: Dice):
+        self.selected_die = die
+        self.selection_coords = die.coords
+        self.show_selection = True
+
+    def select_die_under_mouse(self):
+        die = self.get_hovered_die()
+        if die:
+            if self.selected_die:
+                if self.selected_die == die:
+                    self.deselect()
+                else:
+                    self.select(die)
+            else:
+                self.select(die)
+        else:
+            self.deselect()
 
     def spawn_dice(self):
         self.dice = []
@@ -100,8 +138,9 @@ class Board(pg.sprite.Sprite):
 
             self.dice.append(dice_row)
 
-    def update(self):
-        self.highlight_hovered_die()
+    def update(self, mouse_motion: bool):
+        if mouse_motion:
+            self.highlight_hovered_die()
 
         for die in self.get_all_dice():
             die.update()

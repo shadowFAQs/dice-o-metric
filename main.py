@@ -11,6 +11,7 @@ def main():
     clock     = pg.time.Clock()
     color     = Color()
     game      = Game()
+    mouse_motion = False
     running   = True
 
     while running:
@@ -19,8 +20,13 @@ def main():
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 running = False
+            elif event.type == pg.MOUSEMOTION:
+                mouse_motion = True
+            elif event.type == pg.MOUSEBUTTONDOWN:
+                if event.button == 1:  # Left click
+                    game.select_die()
 
-        game.update()
+        game.update(mouse_motion)
 
         # Draw small screen
         screen.fill(color.black)
@@ -29,6 +35,8 @@ def main():
         screen_2x.fill(color.black)
         pg.transform.scale2x(screen, screen_2x)
         pg.display.flip()
+
+        mouse_motion = False
 
 
 if __name__ == '__main__':
