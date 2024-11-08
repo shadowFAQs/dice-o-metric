@@ -7,8 +7,14 @@ class Game():
         self.sprite_sheet = SpriteSheet()
         self.board = Board(sprite_sheet=self.sprite_sheet)
 
+        self.move_queue = []
+
     def select_die(self):
         self.board.select_die_under_mouse()
 
     def update(self, mouse_motion: bool):
+        self.update_move_queue()
         self.board.update(mouse_motion)
+
+    def update_move_queue(self):
+        pass

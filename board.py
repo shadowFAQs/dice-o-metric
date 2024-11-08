@@ -5,7 +5,8 @@ from random import randint
 import pygame as pg
 from shapely import Point, Polygon
 
-from const import Color, DIE_SPRITE_SIZE, SCREEN_SIZE, TILE_GAP, TILE_SIZE
+from const import Color, BOARD_POS, DIE_SPRITE_SIZE, SCREEN_SIZE, TILE_GAP, \
+                  TILE_SIZE
 from dice import Dice
 from image import SpriteSheet
 
@@ -25,7 +26,6 @@ class Board(pg.sprite.Sprite):
         self.color            = Color()
         self.dice             = []
         self.heightmap        = []
-        self.offset           = pg.math.Vector2(8, 8)
         self.highlight_coords = pg.math.Vector2(0, 0)
         self.selected_die     = None
         self.selection_coords = pg.math.Vector2(0, 0)
@@ -34,7 +34,7 @@ class Board(pg.sprite.Sprite):
 
         self.background_image = pg.image.load(Path('img') / 'bg.bmp')
         self.rect = self.background_image.get_rect()
-        self.image = pg.Surface(self.rect.size, pg.SRCALPHA)
+        self.image = pg.Surface(self.rect.size, pg.SRCALPHA)  # (320, 304)
 
         self.spawn_dice()
 
@@ -95,7 +95,7 @@ class Board(pg.sprite.Sprite):
 
     def get_mouse_pos(self) -> pg.math.Vector2:
         return (
-            pg.mouse.get_pos() - self.offset) / 2 - (TILE_GAP * 2, TILE_GAP * 2)
+            pg.mouse.get_pos() - BOARD_POS) / 2 - (TILE_GAP * 2, TILE_GAP * 2)
 
     def highlight_hovered_die(self):
         self.show_highlight = False

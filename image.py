@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pygame as pg
 
-from const import Color, DIE_SPRITE_SIZE, SELECTION_SIZE
+from const import Color, ARROW_SIZE, DIE_SPRITE_SIZE, SELECTION_SIZE
 
 
 class SpriteSheet():
@@ -24,3 +24,13 @@ class SpriteSheet():
 
         self.selection = pg.Surface(SELECTION_SIZE, pg.SRCALPHA)
         self.selection.blit(self.sprite_sheet, (-8 * 32, 0))
+
+        arrow_names = ['ne', 'nw', 'se', 'sw']
+        self.arrows = {}
+        for n in range(4):
+            self.arrows[arrow_names[n]] = pg.Surface(ARROW_SIZE, pg.SRCALPHA)
+            self.arrows[arrow_names[n]].blit(
+                self.sprite_sheet, (-ARROW_SIZE.x * (n + 1), -32))
+
+        self.arrow_bg = pg.Surface(ARROW_SIZE, pg.SRCALPHA)
+        self.arrow_bg.blit(self.sprite_sheet, (-ARROW_SIZE.x * 4, -32))
