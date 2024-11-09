@@ -1,18 +1,19 @@
 import pygame as pg
 
-from const import Color, BOARD_POS, MOVE_QUEUE_POS, SCREEN_SIZE
+from const import Color, BOARD_POS, INFO_POS, MOVE_QUEUE_POS, NEXT_BADGE_POS, \
+                  SCREEN_SIZE
 from dice import Dice
 from game import Game
 
 
 def main():
-    screen_2x = pg.display.set_mode(SCREEN_SIZE)
-    screen    = pg.Surface(SCREEN_SIZE / 2)
-    clock     = pg.time.Clock()
-    color     = Color()
-    game      = Game()
+    screen_2x    = pg.display.set_mode(SCREEN_SIZE)
+    screen       = pg.Surface(SCREEN_SIZE / 2)
+    clock        = pg.time.Clock()
+    color        = Color()
+    game         = Game()
     mouse_motion = False
-    running   = True
+    running      = True
 
     while running:
         clock.tick(30)  # FPS
@@ -30,9 +31,16 @@ def main():
 
         # Draw small screen
         screen.fill(color.black)
+        screen.blit(game.sprite_sheet.info_bg, INFO_POS)
         screen.blit(game.board.image, BOARD_POS)
-        screen.blit(game.sprite_sheet.arrow_bg, MOVE_QUEUE_POS)
-        # screen.blit(game.next_move_image, MOVE_QUEUE_POS)
+        screen.blit(game.sprite_sheet.queue_bg, MOVE_QUEUE_POS + (32, 27))
+        screen.blit(game.sprite_sheet.queue_bg, MOVE_QUEUE_POS + (32+96, 27))
+        screen.blit(game.sprite_sheet.queue_bg, MOVE_QUEUE_POS + (32+96*2, 27))
+        screen.blit(game.sprite_sheet.queue_bg, MOVE_QUEUE_POS + (32+96*3, 27))
+        for n, move in enumerate(game.move_queue.moves):
+            image_type = 'dark_image' if n else 'image'
+            screen.blit(move[image_type], MOVE_QUEUE_POS + (68 * n, 0))
+        screen.blit(game.sprite_sheet.next_badge, NEXT_BADGE_POS)
 
         # Double and draw 2x screen
         screen_2x.fill(color.black)

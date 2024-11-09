@@ -27,10 +27,21 @@ class SpriteSheet():
 
         arrow_names = ['ne', 'nw', 'se', 'sw']
         self.arrows = {}
+        self.dark_arrows = {}
         for n in range(4):
             self.arrows[arrow_names[n]] = pg.Surface(ARROW_SIZE, pg.SRCALPHA)
             self.arrows[arrow_names[n]].blit(
-                self.sprite_sheet, (-ARROW_SIZE.x * (n + 1), -32))
+                self.sprite_sheet, (-ARROW_SIZE.x * n, -48))
 
-        self.arrow_bg = pg.Surface(ARROW_SIZE, pg.SRCALPHA)
-        self.arrow_bg.blit(self.sprite_sheet, (-ARROW_SIZE.x * 4, -32))
+            self.dark_arrows[arrow_names[n]] = pg.Surface(
+                ARROW_SIZE, pg.SRCALPHA)
+            self.dark_arrows[arrow_names[n]].blit(
+                self.sprite_sheet, (-ARROW_SIZE.x * n, -112))
+
+        self.next_badge = pg.Surface((47, 16), pg.SRCALPHA)
+        self.next_badge.blit(self.sprite_sheet, (-264, -52))
+
+        self.queue_bg = pg.Surface((96, 14), pg.SRCALPHA)
+        self.queue_bg.blit(self.sprite_sheet, (-224, -17))
+
+        self.info_bg = pg.image.load(Path('img') / 'info_bg.bmp')
