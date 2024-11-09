@@ -14,26 +14,10 @@ TILE_SIZE          = pg.math.Vector2(32, 16)
 TILE_GAP           = 2
 
 MOVES = [
-    {
-        'name': 'se',
-        'axis': 'row',
-        'direction': 1
-    },
-    {
-        'name': 'nw',
-        'axis': 'row',
-        'direction': -1
-    },
-    {
-        'name': 'ne',
-        'axis': 'col',
-        'direction': 1
-    },
-    {
-        'name': 'sw',
-        'axis': 'col',
-        'direction': -1
-    },
+    ('se', 'row', 1),
+    ('nw', 'row', -1),
+    ('ne', 'col', 1),
+    ('sw', 'col', -1),
 ]
 
 

@@ -25,7 +25,7 @@ def main():
                 mouse_motion = True
             elif event.type == pg.MOUSEBUTTONDOWN:
                 if event.button == 1:  # Left click
-                    game.select_die()
+                    game.choose_die()
 
         game.update(mouse_motion)
 
@@ -33,13 +33,10 @@ def main():
         screen.fill(color.black)
         screen.blit(game.sprite_sheet.info_bg, INFO_POS)
         screen.blit(game.board.image, BOARD_POS)
-        screen.blit(game.sprite_sheet.queue_bg, MOVE_QUEUE_POS + (32, 27))
-        screen.blit(game.sprite_sheet.queue_bg, MOVE_QUEUE_POS + (32+96, 27))
-        screen.blit(game.sprite_sheet.queue_bg, MOVE_QUEUE_POS + (32+96*2, 27))
-        screen.blit(game.sprite_sheet.queue_bg, MOVE_QUEUE_POS + (32+96*3, 27))
+        screen.blit(game.sprite_sheet.queue_bg, (0, 47))
         for n, move in enumerate(game.move_queue.moves):
             image_type = 'dark_image' if n else 'image'
-            screen.blit(move[image_type], MOVE_QUEUE_POS + (68 * n, 0))
+            screen.blit(getattr(move, image_type), MOVE_QUEUE_POS + (68 * n, 0))
         screen.blit(game.sprite_sheet.next_badge, NEXT_BADGE_POS)
 
         # Double and draw 2x screen

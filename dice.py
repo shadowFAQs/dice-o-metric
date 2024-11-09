@@ -8,12 +8,14 @@ from const import Color
 
 
 class Dice(pg.sprite.Sprite):
-    def __init__(self, value: int, coords: pg.math.Vector2,
+    def __init__(self, row: int, col: int, value: int, coords: pg.math.Vector2,
                  animation_delay: int, image: pg.Surface):
         pg.sprite.Sprite.__init__(self)
 
+        self.row     = row
+        self.col     = col
         self.value   = value
-        self.coords  = coords
+        self.coords  = coords  # Pixel coords (where to draw)
         self.heights = []
         self.image   = image
         self.rect    = self.image.get_rect()
@@ -21,6 +23,9 @@ class Dice(pg.sprite.Sprite):
         self.color   = Color()
 
         self.build_height_animation(animation_delay)
+
+    def __repr__(self) -> str:
+        return f'Die {self.value} @ ({self.col},{self.row})'
 
     def animate_descent(self):
         """Handles "falling" animation at stage load"""

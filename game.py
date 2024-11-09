@@ -3,8 +3,23 @@ from random import randint
 import pygame as pg
 
 from board import Board
-from const import MOVES
+from const import MOVES, SCREEN_SIZE
+from dice import Dice
 from image import SpriteSheet
+
+
+class Move():
+    def __init__(self, name: str, axis: str, value: int):
+        self.name  = name   # [ne, nw, se, sw]
+        self.axis  = axis   # [row, col]
+        self.value = value  # [-1, 1]
+
+        self.image      = None
+        self.dark_image = None
+
+    def __repr__(self) -> str:
+        operator = '+' if self.value > 0 else ''
+        return f'Move: {self.name.upper()} ({self.axis} {operator}{self.value})'
 
 
 class Queue():
@@ -18,11 +33,15 @@ class Queue():
 
         self.populate()
 
+    def __getitem__(self, index: int) -> Move:
+        return self.moves[index]
+
     def populate(self):
         while len(self.moves) < self.max_moves:
-            self.moves.append(MOVES[randint(0, 3)])
-            self.moves[-1]['image'] = self.arrow_images[self.moves[-1]['name']]
-            self.moves[-1]['dark_image'] = self.dark_arrow_images[self.moves[-1]['name']]
+            self.moves.append(Move(*MOVES[randint(0, 3)]))
+            self.moves[-1].image = self.arrow_images[self.moves[-1].name]
+            self.moves[-1].dark_image = self.dark_arrow_images[
+                self.moves[-1].name]
 
 
 class Game():
@@ -33,8 +52,42 @@ class Game():
         self.move_queue = Queue(self.sprite_sheet.arrows,
                                 self.sprite_sheet.dark_arrows)
 
-    def select_die(self):
-        self.board.select_die_under_mouse()
+    def choose_die(self):
+        self.board.choose_die_under_mouse()
+        if self.board.chosen_die.value:          # Can't move rock dice
+            if self.board.chosen_die.value > 0:  # Can't "move" empty spaces
+                self.execute_move(self.board.chosen_die)
+
+    def execute_move(self, die: Dice):
+        """
+        Main game logic
+
+        Attempts to move the selected die in the direction indicated by the
+        move queue.
+        If another die already occupies that spot:
+            If it has the same value as the moved die, this is a "match":
+                Both dice (and any other neighbors with the same value)
+                are removed (recursive neighbor search) and the player's score
+                increases.
+            Else:
+                The move is not allowed.
+        Else if the die is on a board edge and the move would put it
+        beyond that edge:
+            The move is not allowed.
+        Else (there is no die in the spot where the selected die moves):
+            The moved die continues in that direction until...
+                it hits a die, OR...
+                    If that die has the same value:
+                        This is a match, and the above match rules apply.
+                    Else if that die is a rock:
+                        The rock is destroyed.
+                    Else:
+                        The selected die stops next to the die it hits.
+                ...it reaches the edge of the board.
+
+        """
+        blocker = self.board.get_blocker_in_direction(
+            start=die, move=self.move_queue[0])
 
     def update(self, mouse_motion: bool):
         self.board.update(mouse_motion)
