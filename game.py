@@ -99,9 +99,10 @@ class Game():
             start=die, move=self.move_queue[0])
         if blocker:
             if blocker.value == die.value:
-                for die in self.get_matching_neighbors(
-                    matching_value = die.value, match=die):
-                    die.kill()
+                for n, die in enumerate(
+                    self.get_matching_neighbors(matching_value = die.value,
+                                                match=die)):
+                    die.kill(delay=n)
             elif blocker.value == -1:  # No die at destination tile
                 print(f'Move into empty space: {blocker}')
             else:

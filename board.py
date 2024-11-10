@@ -73,7 +73,7 @@ class Board(pg.sprite.Sprite):
                 blocker = self.get_die_from_coords(row=start.row,
                                                    col=start.col + move.value)
         except IndexError:
-            print(f'Off the edge of the board @ row == {start.row + move.value}')
+            print('Off the edge of the board')
             return None
 
         return blocker

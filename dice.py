@@ -57,12 +57,13 @@ class Dice(pg.sprite.Sprite):
                 self.build_flyaway_animation()
                 self.ghost = True
 
-    def kill(self):
+    def kill(self, delay: int):
         self.value = -1
 
-        self.animation_frames  = [self.flash_solid for _ in range(3)]
-        self.animation_frames += [self.flash_wireframe for _ in range(3)]
-        self.animation_frames += [self.flash_solid for _ in range(3)]
+        self.animation_frames  = [self.image for _ in range(delay * 3)]
+        self.animation_frames += [self.flash_solid for _ in range(2)]
+        self.animation_frames += [self.flash_wireframe for _ in range(2)]
+        self.animation_frames += [self.flash_solid for _ in range(2)]
 
         self.current_frame = 1
 
