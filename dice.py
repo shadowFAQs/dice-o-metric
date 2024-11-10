@@ -9,15 +9,19 @@ from const import Color
 
 class Dice(pg.sprite.Sprite):
     def __init__(self, row: int, col: int, value: int, coords: pg.math.Vector2,
-                 animation_delay: int, image: pg.Surface):
+                 animation_delay: int, image: pg.Surface,
+                 ghost_image: pg.Surface):
         pg.sprite.Sprite.__init__(self)
 
-        self.row     = row
-        self.col     = col
-        self.value   = value
-        self.coords  = coords  # Pixel coords (where to draw)
+        self.row         = row
+        self.col         = col
+        self.value       = value
+        self.coords      = coords  # Pixel coords (where to draw)
+        self.image       = image
+        self.ghost_image = ghost_image
+
+        self.ghost   = False
         self.heights = []
-        self.image   = image
         self.rect    = self.image.get_rect()
 
         self.color   = Color()
@@ -25,7 +29,7 @@ class Dice(pg.sprite.Sprite):
         self.build_height_animation(animation_delay)
 
     def __repr__(self) -> str:
-        return f'Die {self.value} @ ({self.col},{self.row})'
+        return f'Die {self.value} @ (r{self.row}, c{self.col})'
 
     def animate_descent(self):
         """Handles "falling" animation at stage load"""
@@ -33,6 +37,10 @@ class Dice(pg.sprite.Sprite):
             self.height_step -= 1
         else:
             self.heights = []
+
+    def become_ghost(self):
+        self.ghost = True
+        self.value = -1
 
     def build_height_animation(self, animation_delay: int):
         animation_frames = 40 + randint(-4, 4)

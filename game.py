@@ -88,6 +88,54 @@ class Game():
         """
         blocker = self.board.get_blocker_in_direction(
             start=die, move=self.move_queue[0])
+        if blocker:
+            if blocker.value == die.value:
+                for die in self.get_matching_neighbors(
+                    matching_value = die.value, match=die):
+                    die.become_ghost()
+            elif blocker.value == -1:  # No die at destination tile
+                print(f'Move into empty space: {blocker}')
+            else:
+                print(f'No match: {blocker}')  # Bump (not allowed / no effect)
+
+    def get_matching_neighbors(self, matching_value: int,
+                               match: Dice) -> list[Dice]:
+        def explore(row: int, col: int, visited: set[Dice] | None = None):
+            if visited is None:
+                visited = set()
+
+            die = self.board.get_die_from_coords(row, col)
+            if die in visited:
+                return
+
+            visited.add(die)
+
+            if die.value == matching_value:
+                result.add(die)
+
+                for neighbor in self.get_neighbors(die):
+                    explore(neighbor.row, neighbor.col, visited)
+
+        result = set([match])
+        explore(match.row, match.col)
+        return list(result)
+
+    def get_neighbors(self, die: Dice) -> list[Dice]:
+        neighbors = []
+        nw_neighbor = die.row - 1, die.col
+        ne_neighbor = die.row, die.col + 1
+        se_neighbor = die.row + 1, die.col
+        sw_neighbor = die.row, die.col - 1
+        neighbor_coords = [nw_neighbor, ne_neighbor, se_neighbor, sw_neighbor]
+        for coord in neighbor_coords:
+            try:
+                neighbor = self.board.get_die_from_coords(*coord)
+                if neighbor:
+                    neighbors.append(neighbor)
+            except IndexError:
+                continue
+
+        return neighbors
 
     def update(self, mouse_motion: bool):
         self.board.update(mouse_motion)

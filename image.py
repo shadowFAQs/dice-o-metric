@@ -15,10 +15,23 @@ class SpriteSheet():
         self.sprite_sheet = pg.image.load(base_filepath).convert_alpha()
 
         self.dice = dict()
+        self.dice_ghosts = dict()
         for n in range(7):
             self.dice[n] = pg.Surface(DIE_SPRITE_SIZE, pg.SRCALPHA)
             self.dice[n].blit(
                 self.sprite_sheet, (DIE_SPRITE_SIZE.x * -n, 0))
+            self.dice_ghosts[n] = pg.Surface(DIE_SPRITE_SIZE, pg.SRCALPHA)
+            self.dice_ghosts[n].blit(
+                self.sprite_sheet, (DIE_SPRITE_SIZE.x * -n, -48))
+
+        self.dice_flash = {}
+        self.dice_flash['solid'] = pg.Surface(DIE_SPRITE_SIZE, pg.SRCALPHA)
+        self.dice_flash['solid'].blit(
+            self.sprite_sheet, (DIE_SPRITE_SIZE.x * -7, 0))
+        self.dice_flash['wireframe'] = pg.Surface(
+            DIE_SPRITE_SIZE, pg.SRCALPHA)
+        self.dice_flash['wireframe'].blit(
+            self.sprite_sheet, (DIE_SPRITE_SIZE.x * -8, 0))
 
         self.highlight = pg.Surface(SELECTION_SIZE, pg.SRCALPHA)
         self.highlight.blit(self.sprite_sheet, (-7 * 32, 0))
@@ -32,15 +45,15 @@ class SpriteSheet():
         for n in range(4):
             self.arrows[arrow_names[n]] = pg.Surface(ARROW_SIZE, pg.SRCALPHA)
             self.arrows[arrow_names[n]].blit(
-                self.sprite_sheet, (-ARROW_SIZE.x * n, -48))
+                self.sprite_sheet, (-ARROW_SIZE.x * n, -96))
 
             self.dark_arrows[arrow_names[n]] = pg.Surface(
                 ARROW_SIZE, pg.SRCALPHA)
             self.dark_arrows[arrow_names[n]].blit(
-                self.sprite_sheet, (-ARROW_SIZE.x * n, -112))
+                self.sprite_sheet, (-ARROW_SIZE.x * n, -160))
 
         self.next_badge = pg.Surface((47, 16), pg.SRCALPHA)
-        self.next_badge.blit(self.sprite_sheet, (-264, -52))
+        self.next_badge.blit(self.sprite_sheet, (-264, -100))
 
         # Move queue "track"
         queue_bg = pg.Surface((96, 14), pg.SRCALPHA)

@@ -49,7 +49,8 @@ class Board(pg.sprite.Sprite):
         for row in range(self.num_rows):
             for col in range(self.num_cols - 1, -1, -1):
                 die = self.dice[row][col]
-                self.image.blit(die.image, die.coords - (0, die.get_height()))
+                die_image = die.ghost_image if die.ghost else die.image
+                self.image.blit(die_image, die.coords - (0, die.get_height()))
 
         if self.show_highlight:
             highlight = self.sprite_sheet.highlight \
@@ -64,33 +65,21 @@ class Board(pg.sprite.Sprite):
                                  move: 'Move') -> Dice | None:
         print(move)
         print(f'Starting at {start}')
-        if move.axis == 'row':
-            try:
-                blocker = self.get_die_from_coords(
-                    start.col, start.row + move.value)
-                if blocker.value == start.value:
-                    print(f'Match: {blocker}')
-                elif blocker.value == -1:
-                    print(f'Move into empty space: {blocker}')
-                else:
-                    print(f'No match: {blocker}')
-            except IndexError:
-                print(f'Off the edge of the board @ row == {start.row + move.value}')
-        if move.axis == 'col':
-            try:
-                blocker = self.get_die_from_coords(
-                    start.col + move.value, start.row)
-                if blocker.value == start.value:
-                    print(f'Match: {blocker}')
-                elif blocker.value == -1:
-                    print(f'Move into empty space: {blocker}')
-                else:
-                    print(f'No match: {blocker}')
-            except IndexError:
-                print(f'Off the edge of the board @ col == {start.col + move.value}')
+        try:
+            if move.axis == 'row':
+                blocker = self.get_die_from_coords(row=start.row + move.value,
+                                                   col=start.col)
+            else:
+                blocker = self.get_die_from_coords(row=start.row,
+                                                   col=start.col + move.value)
+        except IndexError:
+            print(f'Off the edge of the board @ row == {start.row + move.value}')
+            return None
 
-    def get_die_from_coords(self, col: int, row: int) -> Dice:
-        if not (0 < col < 8) or not (0 < row < 8):
+        return blocker
+
+    def get_die_from_coords(self, row: int, col: int) -> Dice:
+        if not (-1 < col < 8) or not (-1 < row < 8):
             raise IndexError
 
         return self.dice[row][col]
@@ -147,15 +136,17 @@ class Board(pg.sprite.Sprite):
                     animation_delay = row * 5 + col * 2 + randint(0, 8)
                     value = randint(0, 6)
                     image = self.sprite_sheet.dice[value]
+                    ghost_image = self.sprite_sheet.dice_ghosts[value]
                 else:  # Create empty spot
                     animation_delay = 0
                     value = -1
                     image = pg.Surface((DIE_SPRITE_SIZE), pg.SRCALPHA)
                     image.fill(self.color.transparent)
+                    ghost_image = None
 
                 coords = self.get_die_pos(row, col)
                 dice_row.append(Dice(row, col, value, coords, animation_delay,
-                                     image))
+                                     image, ghost_image))
 
             self.dice.append(dice_row)
 
