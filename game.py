@@ -36,6 +36,10 @@ class Queue():
     def __getitem__(self, index: int) -> Move:
         return self.moves[index]
 
+    def pop(self):
+        self.moves.pop(0)
+        self.populate()
+
     def populate(self):
         while len(self.moves) < self.max_moves:
             self.moves.append(Move(*MOVES[randint(0, 3)]))
@@ -52,11 +56,16 @@ class Game():
         self.move_queue = Queue(self.sprite_sheet.arrows,
                                 self.sprite_sheet.dark_arrows)
 
+    def advance_move_queue(self):
+        self.move_queue.pop()
+
     def choose_die(self):
         self.board.choose_die_under_mouse()
-        if self.board.chosen_die.value:          # Can't move rock dice
-            if self.board.chosen_die.value > 0:  # Can't "move" empty spaces
-                self.execute_move(self.board.chosen_die)
+        if self.board.chosen_die:
+            if self.board.chosen_die.value:          # Can't move rock dice
+                if self.board.chosen_die.value > 0:  # Can't "move" empty spaces
+                    self.execute_move(self.board.chosen_die)
+                    self.advance_move_queue()
 
     def execute_move(self, die: Dice):
         """

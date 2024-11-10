@@ -31,7 +31,7 @@ class Board(pg.sprite.Sprite):
         self.color            = Color()
         self.dice             = []
         self.highlight_coords = pg.math.Vector2(0, 0)
-        self.show_highlight   = False
+        self.show_highlight   = 0  # [-1, 0, 1]
 
         self.background_image = pg.image.load(Path('img') / 'bg.bmp')
         self.rect = self.background_image.get_rect()
@@ -123,7 +123,7 @@ class Board(pg.sprite.Sprite):
         die = self.get_hovered_die()
         if die:
             self.highlight_coords = die.coords
-            self.show_highlight = -1 if die.value == -1 else 1
+            self.show_highlight = -1 if die.value in (-1, 0) else 1
 
     def spawn_dice(self):
         self.dice = []
