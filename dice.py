@@ -8,14 +8,14 @@ from const import Color
 
 
 class Dice(pg.sprite.Sprite):
-    def __init__(self, row: int, col: int, value: int, coords: pg.math.Vector2,
+    def __init__(self, row: int, col: int, value: int, pos: pg.math.Vector2,
                  animation_delay: int, images: dict):
         pg.sprite.Sprite.__init__(self)
 
         self.row         = row
         self.col         = col
         self.value       = value
-        self.coords      = coords  # Pixel coords (where to draw)
+        self.pos         = pos  # Pixel coords (where to draw)
 
         self.ghost_image     = images['ghost']
         self.image           = images['image']
@@ -57,16 +57,6 @@ class Dice(pg.sprite.Sprite):
                 self.build_flyaway_animation()
                 self.ghost = True
 
-    def kill(self, delay: int):
-        self.value = -1
-
-        self.animation_frames  = [self.image for _ in range(delay * 3)]
-        self.animation_frames += [self.flash_solid for _ in range(2)]
-        self.animation_frames += [self.flash_wireframe for _ in range(2)]
-        self.animation_frames += [self.flash_solid for _ in range(2)]
-
-        self.current_frame = 1
-
     def build_drop_animation(self, animation_delay: int):
         animation_frames = 40 + randint(-4, 4)
         delay = animation_delay
@@ -105,6 +95,23 @@ class Dice(pg.sprite.Sprite):
             return self.ghost_image
         else:
             return self.image
+
+    def kill(self, delay: int):
+        self.value = -1
+
+        self.animation_frames  = [self.image for _ in range(delay * 3)]
+        self.animation_frames += [self.flash_solid for _ in range(2)]
+        self.animation_frames += [self.flash_wireframe for _ in range(2)]
+        self.animation_frames += [self.flash_solid for _ in range(2)]
+
+        self.current_frame = 1
+
+    def set_coords(self, row: int, col: int):
+        self.row = row
+        self.col = col
+
+    def set_pos(self, pos: tuple[int]):
+        self.pos = pg.math.Vector2(pos)
 
     def update(self):
         self.animate()

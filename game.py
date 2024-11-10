@@ -8,6 +8,10 @@ from dice import Dice
 from image import SpriteSheet
 
 
+def _roll_d6() -> int:
+    return randint(1, 6)
+
+
 class Move():
     def __init__(self, name: str, axis: str, value: int):
         self.name  = name   # [ne, nw, se, sw]
@@ -97,32 +101,44 @@ class Game():
         """
         self.board.show_highlight = 0
 
-        blocker = self.board.get_blocker_in_direction(
+        neighbor_die = self.board.get_neighbor_in_direction(
             start=die, move=self.move_queue[0])
-        if blocker:
-            if blocker.value == die.value:
+        if neighbor_die:
+            print(f'Found neighbor die: {neighbor_die}')
+            if neighbor_die.value == die.value:
+                print('match')
                 for n, die in enumerate(
                     self.get_matching_neighbors(matching_value = die.value,
                                                 match=die)):
                     die.kill(delay=n)
-            elif blocker.value == -1:  # No die at destination tile
+            elif neighbor_die.value == -1:
                 print('Move into empty space')
-                self.get_destination_space(die.row, die.col,
-                                           move=self.move_queue[0])
+                die.set_coords(
+                    *self.get_destination_space(die, move=self.move_queue[0]))
+                self.board.set_die_pos(die)
             else:
-                print(f'No match: {blocker}')  # Bump (not allowed / no effect)
+                print('No match')
+        else:
+            print('Off edge of board')
 
-    def get_destination_space(self, row: int, col: int,
-                              move: Move) -> tuple[int]:
+    def get_destination_space(self, die: Dice, move: Move) -> tuple[int]:
         """
-        Checks spaces along {axis} in {move.value}
-        direction until it finds and returns coords for:
+        Checks spaces along {axis} in {move.value} direction until
+        it finds and returns coords for:
             1. The space adjacent to another die, or
             2. The last space on the board in {move.value} direction
             along {axis}
 
+        This method is only called when the space a die would move to
+        has value == -1, so empty_spaces will always contain at least 1 item.
         """
-        ...  # TODO
+        empty_spaces = []
+        blocker = self.board.get_neighbor_in_direction(die, move)
+        while blocker and blocker.value == -1:
+            empty_spaces.append(blocker)
+            blocker = self.board.get_neighbor_in_direction(blocker, move)
+
+        return empty_spaces[-1].row, empty_spaces[-1].col
 
     def get_matching_neighbors(self, matching_value: int,
                                match: Dice) -> list[Dice]:

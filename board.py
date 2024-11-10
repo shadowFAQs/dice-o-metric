@@ -11,14 +11,6 @@ from dice import Dice
 from image import SpriteSheet
 
 
-def _roll_d6() -> int:
-    return randint(1, 6)
-
-
-def _transform_by_coords(x: int, y: int, coords: tuple[int]) -> tuple[int]:
-    return x + coords[0], y + coords[1]
-
-
 class Board(pg.sprite.Sprite):
     def __init__(self, sprite_sheet: SpriteSheet):
         pg.sprite.Sprite.__init__(self)
@@ -50,7 +42,7 @@ class Board(pg.sprite.Sprite):
             for col in range(self.num_cols - 1, -1, -1):
                 die = self.dice[row][col]
                 self.image.blit(die.get_image(),
-                                die.coords - (0, die.get_height()))
+                                die.pos - (0, die.get_height()))
 
         if self.show_highlight:
             highlight = self.sprite_sheet.highlight \
@@ -60,23 +52,6 @@ class Board(pg.sprite.Sprite):
     def get_all_dice(self) -> list[Dice]:
         """Returns flattened list from 2D list"""
         return list(chain(*self.dice))
-
-    def get_blocker_in_direction(self, start: Dice,
-                                 move: 'Move') -> Dice | None:
-        print(move)
-        print(f'Starting at {start}')
-        try:
-            if move.axis == 'row':
-                blocker = self.get_die_from_coords(row=start.row + move.value,
-                                                   col=start.col)
-            else:
-                blocker = self.get_die_from_coords(row=start.row,
-                                                   col=start.col + move.value)
-        except IndexError:
-            print('Off the edge of the board')
-            return None
-
-        return blocker
 
     def get_die_from_coords(self, row: int, col: int) -> Dice:
         if not (-1 < col < 8) or not (-1 < row < 8):
@@ -105,8 +80,8 @@ class Board(pg.sprite.Sprite):
 
             for die in self.get_all_dice():
                 hitbox = Polygon(
-                    (die.coords + (0, 8), die.coords + (15, 0),
-                     die.coords + (31, 8), die.coords + (15, 16))
+                    (die.pos + (0, 8), die.pos + (15, 0),
+                     die.pos + (31, 8), die.pos + (15, 16))
                 )
                 if hitbox.contains(mouse_point):
                     return die
@@ -116,6 +91,19 @@ class Board(pg.sprite.Sprite):
     def get_mouse_pos(self) -> pg.math.Vector2:
         return (
             pg.mouse.get_pos() - BOARD_POS) / 2 - (TILE_GAP * 2, TILE_GAP * 2)
+
+    def get_neighbor_in_direction(self, start: Dice,
+                                  move: 'Move') -> Dice | None:
+        try:
+            if move.axis == 'row':
+                return self.get_die_from_coords(row=start.row + move.value,
+                                                col=start.col)
+            else:
+                return self.get_die_from_coords(row=start.row,
+                                                   col=start.col + move.value)
+        except IndexError:
+            print('Off the edge of the board')
+            return None
 
     def highlight_hovered_die(self):
         die = self.get_hovered_die()
@@ -128,15 +116,20 @@ class Board(pg.sprite.Sprite):
                 case -1:  # Empty space; don't show highlight on hover
                     self.show_highlight = 0
                 case 0:   # Rock die; show dim highlight
-                    self.highlight_coords = die.coords
+                    self.highlight_coords = die.pos
                     self.show_highlight = -1
                 case _:
-                    self.highlight_coords = die.coords
+                    self.highlight_coords = die.pos
                     self.show_highlight = 1
         else:
             self.show_highlight = 0
 
+    def set_die_pos(self, die: Dice):
+        die.set_pos(self.get_die_pos(die.row, die.col))
+
     def spawn_dice(self):
+        from game import _roll_d6
+
         self.dice = []
 
         image = self.sprite_sheet.dice
@@ -155,7 +148,6 @@ class Board(pg.sprite.Sprite):
                     image.fill(self.color.transparent)
                     ghost_image = None
 
-                coords = self.get_die_pos(row, col)
                 images = {
                     'image': image,
                     'ghost': ghost_image,
@@ -167,8 +159,10 @@ class Board(pg.sprite.Sprite):
                     self.sprite_sheet.dice_flash['solid'], (0, 0))
                 images['flash_wireframe'].blit(
                     self.sprite_sheet.dice_flash['wireframe'], (0, 0))
-                dice_row.append(Dice(row, col, value, coords, animation_delay,
-                                     images))
+                dice_row.append(
+                    Dice(row, col, value, self.get_die_pos(row, col),
+                         animation_delay, images)
+                )
 
             self.dice.append(dice_row)
 
