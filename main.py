@@ -52,3 +52,5 @@ if __name__ == '__main__':
     pg.display.set_caption('Dice')
 
     main()
+
+    # Idea: Add a move type which will rotate dice so that one of the "inactive" but visible faces is up?

@@ -118,12 +118,23 @@ class Board(pg.sprite.Sprite):
             pg.mouse.get_pos() - BOARD_POS) / 2 - (TILE_GAP * 2, TILE_GAP * 2)
 
     def highlight_hovered_die(self):
-        self.show_highlight = 0
-
         die = self.get_hovered_die()
         if die:
-            self.highlight_coords = die.coords
-            self.show_highlight = -1 if die.value in (-1, 0) else 1
+            if die.heights:  # Don't highlight during animation
+                self.show_highlight = 0
+                return
+
+            match die.value:
+                case -1:  # Empty space; don't show highlight on hover
+                    self.show_highlight = 0
+                case 0:   # Rock die; show dim highlight
+                    self.highlight_coords = die.coords
+                    self.show_highlight = -1
+                case _:
+                    self.highlight_coords = die.coords
+                    self.show_highlight = 1
+        else:
+            self.show_highlight = 0
 
     def spawn_dice(self):
         self.dice = []

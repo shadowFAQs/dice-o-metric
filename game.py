@@ -95,6 +95,8 @@ class Game():
                 ...it reaches the edge of the board.
 
         """
+        self.board.show_highlight = 0
+
         blocker = self.board.get_blocker_in_direction(
             start=die, move=self.move_queue[0])
         if blocker:
@@ -104,9 +106,23 @@ class Game():
                                                 match=die)):
                     die.kill(delay=n)
             elif blocker.value == -1:  # No die at destination tile
-                print(f'Move into empty space: {blocker}')
+                print('Move into empty space')
+                self.get_destination_space(die.row, die.col,
+                                           move=self.move_queue[0])
             else:
                 print(f'No match: {blocker}')  # Bump (not allowed / no effect)
+
+    def get_destination_space(self, row: int, col: int,
+                              move: Move) -> tuple[int]:
+        """
+        Checks spaces along {axis} in {move.value}
+        direction until it finds and returns coords for:
+            1. The space adjacent to another die, or
+            2. The last space on the board in {move.value} direction
+            along {axis}
+
+        """
+        ...  # TODO
 
     def get_matching_neighbors(self, matching_value: int,
                                match: Dice) -> list[Dice]:
