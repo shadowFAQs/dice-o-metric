@@ -27,11 +27,11 @@ class SpriteSheet():
         self.dice_flash = {}
         self.dice_flash['solid'] = pg.Surface(DIE_SPRITE_SIZE, pg.SRCALPHA)
         self.dice_flash['solid'].blit(
-            self.sprite_sheet, (DIE_SPRITE_SIZE.x * -7, 0))
+            self.sprite_sheet, (DIE_SPRITE_SIZE.x * -7, -48))
         self.dice_flash['wireframe'] = pg.Surface(
             DIE_SPRITE_SIZE, pg.SRCALPHA)
         self.dice_flash['wireframe'].blit(
-            self.sprite_sheet, (DIE_SPRITE_SIZE.x * -8, 0))
+            self.sprite_sheet, (DIE_SPRITE_SIZE.x * -8, -48))
 
         self.highlight = pg.Surface(SELECTION_SIZE, pg.SRCALPHA)
         self.highlight.blit(self.sprite_sheet, (-7 * 32, 0))

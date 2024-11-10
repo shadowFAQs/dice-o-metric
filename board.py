@@ -49,8 +49,8 @@ class Board(pg.sprite.Sprite):
         for row in range(self.num_rows):
             for col in range(self.num_cols - 1, -1, -1):
                 die = self.dice[row][col]
-                die_image = die.ghost_image if die.ghost else die.image
-                self.image.blit(die_image, die.coords - (0, die.get_height()))
+                self.image.blit(die.get_image(),
+                                die.coords - (0, die.get_height()))
 
         if self.show_highlight:
             highlight = self.sprite_sheet.highlight \
@@ -145,8 +145,19 @@ class Board(pg.sprite.Sprite):
                     ghost_image = None
 
                 coords = self.get_die_pos(row, col)
+                images = {
+                    'image': image,
+                    'ghost': ghost_image,
+                    'flash_solid': pg.Surface((DIE_SPRITE_SIZE), pg.SRCALPHA),
+                    'flash_wireframe': pg.Surface((DIE_SPRITE_SIZE),
+                                                   pg.SRCALPHA)
+                }
+                images['flash_solid'].blit(
+                    self.sprite_sheet.dice_flash['solid'], (0, 0))
+                images['flash_wireframe'].blit(
+                    self.sprite_sheet.dice_flash['wireframe'], (0, 0))
                 dice_row.append(Dice(row, col, value, coords, animation_delay,
-                                     image, ghost_image))
+                                     images))
 
             self.dice.append(dice_row)
 

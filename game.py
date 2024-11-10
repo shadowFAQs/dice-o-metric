@@ -101,7 +101,7 @@ class Game():
             if blocker.value == die.value:
                 for die in self.get_matching_neighbors(
                     matching_value = die.value, match=die):
-                    die.become_ghost()
+                    die.kill()
             elif blocker.value == -1:  # No die at destination tile
                 print(f'Move into empty space: {blocker}')
             else:
