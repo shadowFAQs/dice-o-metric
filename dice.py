@@ -15,7 +15,7 @@ class Dice(pg.sprite.Sprite):
         self.row         = row
         self.col         = col
         self.value       = value
-        self.pos         = pos  # Pixel coords (where to draw)
+        self.pos         = pos  # Pixel position (where to draw)
 
         self.ghost_image     = images['ghost']
         self.image           = images['image']
@@ -25,10 +25,12 @@ class Dice(pg.sprite.Sprite):
 
         self.animation_frames = []  # List of pg.Surface
         self.current_frame    = 0
+        self.freeze_z_index   = False
         self.ghost            = False
         self.rect             = self.image.get_rect()
         self.offset_step      = 0
         self.offsets          = []  # List of pg.math.Vector2
+        self.z_index          = 0
 
         self.color   = Color()
 
@@ -45,6 +47,8 @@ class Dice(pg.sprite.Sprite):
         else:
             self.offsets = []
             self.offset_step = 0
+            self.freeze_z_index = False
+            self.z_index = self.pos.y
             if self.ghost:
                 self.fade_counter = 0
 
@@ -71,6 +75,8 @@ class Dice(pg.sprite.Sprite):
         raw_positions = [pg.math.Vector2(0, y) for y in raw_positions]
         self.set_offsets_from_raw_positions(
             raw_positions, start_value=pg.math.Vector2(0, starting_y))
+        self.z_index = self.pos.y
+        self.freeze_z_index = True
 
     def build_flyaway_animation(self):
         num_frames = self.fade_counter // 7
@@ -81,12 +87,16 @@ class Dice(pg.sprite.Sprite):
         ]
         raw_positions = [pg.math.Vector2(0, y) for y in raw_positions]
         self.set_offsets_from_raw_positions(raw_positions)
+        self.z_index = self.pos.y
+        self.freeze_z_index = True
 
     def build_slide_animation(self, start_pos: tuple[int], end_pos: tuple[int]):
-        ...  # TODO
+        raw_positions = []
+        for x, y in pytweening.iterLinear(
+            start_pos[0], start_pos[1], end_pos[0], end_pos[1], 0.1):
+            raw_positions.append(pg.math.Vector2(x, y))
 
-    def draw(self):
-        pass
+        self.set_offsets_from_raw_positions(raw_positions)
 
     def get_height(self) -> float:
         if self.offsets:
@@ -131,6 +141,9 @@ class Dice(pg.sprite.Sprite):
     def set_pos(self):
         if self.offsets:
             self.pos += self.offsets[self.offset_step]
+
+            if not self.freeze_z_index:
+                self.z_index = self.pos.y
 
     def update(self):
         self.set_pos()

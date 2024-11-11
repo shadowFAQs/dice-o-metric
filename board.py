@@ -1,4 +1,3 @@
-from functools import cmp_to_key
 from itertools import chain
 from pathlib import Path
 from random import randint
@@ -40,24 +39,21 @@ class Board(pg.sprite.Sprite):
         self.image.fill(self.color.black)
         self.image.blit(self.background_image, (0, 0))
 
-        for row in range(self.num_rows):
-            for col in range(self.num_cols - 1, -1, -1):
-                die = self.dice[row][col]
-                self.image.blit(die.get_image(), die.pos)
+        for die in self.get_all_dice(sort=True):
+            self.image.blit(die.get_image(), die.pos)
 
         if self.show_highlight:
             highlight = self.sprite_sheet.highlight \
                 if self.show_highlight == 1 else self.sprite_sheet.dimlight
             self.image.blit(highlight, self.highlight_coords)
 
-    def get_all_dice(
-        self, func: Callable[[Dice, Dice], int] | None = None) -> list[Dice]:
+    def get_all_dice(self, sort: bool = False) -> list[Dice]:
         """Returns flattened list from 2D list"""
         flat_list = list(chain(*self.dice))
-        if not func:
+        if not sort:
             return flat_list
 
-        return sorted(flat_list, key=cmp_to_key(func))
+        return sorted(flat_list, key=lambda d: d.z_index)  # Sort by draw order
 
     def get_die_from_coords(self, row: int, col: int) -> Dice:
         if not (-1 < col < 8) or not (-1 < row < 8):

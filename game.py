@@ -12,8 +12,8 @@ def _roll_d6() -> int:
     return randint(1, 6)
 
 
-def _sort_by_z_index(d1: Dice, d2: Dice) -> int:
-    ...  # TODO
+def _sort_by_z_index(d: Dice) -> int:
+    return d.pos.y
 
 
 class Move():
@@ -116,12 +116,11 @@ class Game():
                                                 match=die)):
                     die.kill(delay=n)
             elif neighbor_die.value == -1:
-                print('Move into empty space')
                 start_pos = self.board.get_die_pos(die.row, die.col)
                 target_coords = self.get_destination_coords(
                     die, move=self.move_queue[0])
                 end_pos = self.board.get_die_pos(*target_coords)
-                die.set_coords(target_coords)
+                die.set_coords(*target_coords)
                 die.build_slide_animation(start_pos, end_pos)
             else:
                 print('No match')
