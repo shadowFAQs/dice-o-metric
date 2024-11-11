@@ -72,10 +72,11 @@ class Game():
         if self.board.chosen_die:
             if self.board.chosen_die.value:          # Can't move rock dice
                 if self.board.chosen_die.value > 0:  # Can't "move" empty spaces
-                    self.execute_move(self.board.chosen_die)
-                    self.advance_move_queue()
+                    status = self.execute_move(self.board.chosen_die)
+                    if status == 0:  # Successful move
+                        self.advance_move_queue()
 
-    def execute_move(self, die: Dice):
+    def execute_move(self, die: Dice) -> int:
         """
         Main game logic
 
@@ -109,16 +110,15 @@ class Game():
             coords = self.get_coords_in_direction(
                 die.row, die.col, self.move_queue[0])
             neighbor_die = self.board.get_die_from_coords(*coords)
-            print(f'Found neighbor die: {neighbor_die}')
-
             if neighbor_die:
                 if neighbor_die.value == die.value:  # Match
                     for n, die in enumerate(
                         self.get_matching_neighbors(matching_value = die.value,
                                                     match=die)):
                         die.kill(delay=n)
-                else:  # No match / bump
-                    print('No match')
+                    return 0
+                else:
+                    return 1  # No match / bump
             else:  # Slide
                 target_coords = self.get_destination_coords(
                     die, move=self.move_queue[0])
@@ -126,8 +126,9 @@ class Game():
                 end_pos = self.board.get_die_pos(*target_coords)
                 die.set_coords(*target_coords)
                 die.build_slide_animation(start_pos, end_pos)
-        except IndexError:  # At edge of board
-            pass
+                return 0
+        except IndexError:
+            return 2  # At edge of board
 
     def get_coords_in_direction(self, start_row: int, start_col: int,
                                 move: Move) -> tuple[int]:
@@ -191,10 +192,10 @@ class Game():
 
     def get_neighbors(self, die: Dice) -> list[Dice]:
         neighbors = []
-        nw_neighbor = die.row - 1, die.col
-        ne_neighbor = die.row, die.col + 1
-        se_neighbor = die.row + 1, die.col
-        sw_neighbor = die.row, die.col - 1
+        nw_neighbor = (die.row - 1, die.col)
+        ne_neighbor = (die.row, die.col + 1)
+        se_neighbor = (die.row + 1, die.col)
+        sw_neighbor = (die.row, die.col - 1)
         neighbor_coords = [nw_neighbor, ne_neighbor, se_neighbor, sw_neighbor]
         for coord in neighbor_coords:
             try:
