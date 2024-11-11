@@ -105,27 +105,40 @@ class Game():
         """
         self.board.show_highlight = 0
 
-        neighbor_die = self.board.get_neighbor_in_direction(
-            start=die, move=self.move_queue[0])
-        if neighbor_die:
+        try:
+            coords = self.get_coords_in_direction(
+                die.row, die.col, self.move_queue[0])
+            neighbor_die = self.board.get_die_from_coords(*coords)
             print(f'Found neighbor die: {neighbor_die}')
-            if neighbor_die.value == die.value:
-                print('match')
-                for n, die in enumerate(
-                    self.get_matching_neighbors(matching_value = die.value,
-                                                match=die)):
-                    die.kill(delay=n)
-            elif neighbor_die.value == -1:
-                start_pos = self.board.get_die_pos(die.row, die.col)
+
+            if neighbor_die:
+                if neighbor_die.value == die.value:  # Match
+                    for n, die in enumerate(
+                        self.get_matching_neighbors(matching_value = die.value,
+                                                    match=die)):
+                        die.kill(delay=n)
+                else:  # No match / bump
+                    print('No match')
+            else:  # Slide
                 target_coords = self.get_destination_coords(
                     die, move=self.move_queue[0])
+                start_pos = self.board.get_die_pos(die.row, die.col)
                 end_pos = self.board.get_die_pos(*target_coords)
                 die.set_coords(*target_coords)
                 die.build_slide_animation(start_pos, end_pos)
-            else:
-                print('No match')
+        except IndexError:  # At edge of board
+            pass
+
+    def get_coords_in_direction(self, start_row: int, start_col: int,
+                                move: Move) -> tuple[int]:
+        if move.axis == 'row':
+            if not -1 < start_row + move.value < 8:
+                raise IndexError
+            return start_row + move.value, start_col
         else:
-            print('Off edge of board')
+            if not -1 < start_col + move.value < 8:
+                raise IndexError
+            return start_row, start_col + move.value
 
     def get_destination_coords(self, die: Dice, move: Move) -> tuple[int]:
         """
@@ -134,17 +147,25 @@ class Game():
             1. The space adjacent to another die, or
             2. The last space on the board in {move.value} direction
             along {axis}
-
-        This method is only called when the space a die would move to
-        has value == -1, so empty_spaces will always contain at least 1 item.
         """
-        empty_spaces = []
-        blocker = self.board.get_neighbor_in_direction(die, move)
-        while blocker and blocker.value == -1:
-            empty_spaces.append(blocker)
-            blocker = self.board.get_neighbor_in_direction(blocker, move)
+        empty_coords = (die.row, die.col)
 
-        return empty_spaces[-1].row, empty_spaces[-1].col
+        try:
+            coords = self.get_coords_in_direction(die.row, die.col, move)
+            blocker = self.board.get_die_from_coords(*coords)
+        except IndexError:  # Off the edge of the board
+            return empty_coords
+
+        try:
+            while not blocker:
+                empty_coords = coords
+                coords = self.get_coords_in_direction(
+                    coords[0], coords[1], move)
+                blocker = self.board.get_die_from_coords(*coords)
+        except IndexError:
+            return empty_coords
+
+        return empty_coords
 
     def get_matching_neighbors(self, matching_value: int,
                                match: Dice) -> list[Dice]:

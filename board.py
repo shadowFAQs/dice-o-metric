@@ -1,4 +1,3 @@
-from itertools import chain
 from pathlib import Path
 from random import randint
 from typing import Callable
@@ -49,17 +48,19 @@ class Board(pg.sprite.Sprite):
 
     def get_all_dice(self, sort: bool = False) -> list[Dice]:
         """Returns flattened list from 2D list"""
-        flat_list = list(chain(*self.dice))
         if not sort:
-            return flat_list
+            return self.dice
 
-        return sorted(flat_list, key=lambda d: d.z_index)  # Sort by draw order
+        return sorted(self.dice, key=lambda d: d.z_index)  # Sort by draw order
 
-    def get_die_from_coords(self, row: int, col: int) -> Dice:
+    def get_die_from_coords(self, row: int, col: int) -> Dice | None:
         if not (-1 < col < 8) or not (-1 < row < 8):
             raise IndexError
 
-        return self.dice[row][col]
+        try:
+            return [d for d in self.dice if d.row == row and d.col == col][0]
+        except IndexError:
+            return None
 
     def get_die_pos(self, row: int, col: int) -> pg.math.Vector2:
         """Translates row & col into pixel position"""
@@ -96,16 +97,12 @@ class Board(pg.sprite.Sprite):
 
     def get_neighbor_in_direction(self, start: Dice,
                                   move: 'Move') -> Dice | None:
-        try:
-            if move.axis == 'row':
-                return self.get_die_from_coords(row=start.row + move.value,
-                                                col=start.col)
-            else:
-                return self.get_die_from_coords(row=start.row,
-                                                col=start.col + move.value)
-        except IndexError:
-            print('Off the edge of the board')
-            return None
+        if move.axis == 'row':
+            return self.get_die_from_coords(row=start.row + move.value,
+                                            col=start.col)
+        else:
+            return self.get_die_from_coords(row=start.row,
+                                            col=start.col + move.value)
 
     def highlight_hovered_die(self):
         die = self.get_hovered_die()
@@ -126,6 +123,9 @@ class Board(pg.sprite.Sprite):
         else:
             self.show_highlight = 0
 
+    def remove_die(self, die: Dice):
+        self.dice.pop(self.dice.index(die))
+
     def spawn_dice(self):
         from game import _roll_d6
 
@@ -133,37 +133,27 @@ class Board(pg.sprite.Sprite):
 
         image = self.sprite_sheet.dice
         for row in range(self.num_rows):
-            dice_row = []
             for col in range(self.num_cols):
                 if _roll_d6() > 1:
                     animation_delay = row * 5 + col * 2 + randint(0, 8)
                     value = randint(0, 6)
                     image = self.sprite_sheet.dice[value]
                     ghost_image = self.sprite_sheet.dice_ghosts[value]
-                else:  # Create empty spot
-                    animation_delay = 0
-                    value = -1
-                    image = pg.Surface((DIE_SPRITE_SIZE), pg.SRCALPHA)
-                    image.fill(self.color.transparent)
-                    ghost_image = None
-
-                images = {
+                    images = {
                     'image': image,
                     'ghost': ghost_image,
                     'flash_solid': pg.Surface((DIE_SPRITE_SIZE), pg.SRCALPHA),
                     'flash_wireframe': pg.Surface((DIE_SPRITE_SIZE),
                                                    pg.SRCALPHA)
-                }
-                images['flash_solid'].blit(
-                    self.sprite_sheet.dice_flash['solid'], (0, 0))
-                images['flash_wireframe'].blit(
-                    self.sprite_sheet.dice_flash['wireframe'], (0, 0))
-                dice_row.append(
-                    Dice(row, col, value, self.get_die_pos(row, col),
-                         animation_delay, images)
-                )
-
-            self.dice.append(dice_row)
+                    }
+                    images['flash_solid'].blit(
+                        self.sprite_sheet.dice_flash['solid'], (0, 0))
+                    images['flash_wireframe'].blit(
+                        self.sprite_sheet.dice_flash['wireframe'], (0, 0))
+                    self.dice.append(
+                        Dice(row, col, value, self.get_die_pos(row, col),
+                             animation_delay, images)
+                    )
 
     def update(self, mouse_motion: bool):
         if mouse_motion:
@@ -171,5 +161,8 @@ class Board(pg.sprite.Sprite):
 
         for die in self.get_all_dice():
             die.update()
+
+            if die.value == -1 and not die.is_animating():
+                self.remove_die(die)
 
         self.draw()

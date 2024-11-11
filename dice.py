@@ -11,6 +11,11 @@ class Dice(pg.sprite.Sprite):
     def __init__(self, row: int, col: int, value: int, pos: pg.math.Vector2,
                  animation_delay: int, images: dict):
         pg.sprite.Sprite.__init__(self)
+        """
+        For {value}, 0 means a "rock" die;
+        -1 means "kill me once I'm done animating".
+        Everything else is just the number of dimples showing.
+        """
 
         self.row         = row
         self.col         = col
@@ -112,6 +117,9 @@ class Dice(pg.sprite.Sprite):
             return self.ghost_image
         else:
             return self.image
+
+    def is_animating(self) -> bool:
+        return bool(self.offsets) or bool(self.animation_frames)
 
     def kill(self, delay: int):
         self.value = -1
