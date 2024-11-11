@@ -23,11 +23,12 @@ class Dice(pg.sprite.Sprite):
         self.flash_solid     = images['flash_solid']
         self.flash_wireframe = images['flash_wireframe']
 
-        self.animation_frames = []
+        self.animation_frames = []  # List of pg.Surface
         self.current_frame    = 0
         self.ghost            = False
-        self.heights          = []
         self.rect             = self.image.get_rect()
+        self.offset_step      = 0
+        self.offsets          = []  # List of pg.math.Vector2
 
         self.color   = Color()
 
@@ -37,14 +38,13 @@ class Dice(pg.sprite.Sprite):
         return f'Die {self.value} @ (r{self.row}, c{self.col})'
 
     def animate(self):
-        """Handles "falling" animation at stage load"""
-        if self.height_step and self.height_step < len(self.heights) - 1:
-            self.height_step += 1
+        if self.offsets and self.offset_step < len(self.offsets) - 1:
+            self.offset_step += 1
             if self.ghost:
                 self.fade_counter -= 7
         else:
-            self.heights = []
-            self.height_step = 0
+            self.offsets = []
+            self.offset_step = 0
             if self.ghost:
                 self.fade_counter = 0
 
@@ -58,32 +58,39 @@ class Dice(pg.sprite.Sprite):
                 self.ghost = True
 
     def build_drop_animation(self, animation_delay: int):
-        animation_frames = 40 + randint(-4, 4)
+        num_frames = 40 + randint(-4, 4)
         delay = animation_delay
-        starting_height = 320
-        self.heights = [
-            pytweening.easeInQuad((n / animation_frames)) * starting_height \
-                for n in range(animation_frames + 1)
+        starting_y = -320
+
+        raw_positions = [
+            pytweening.easeInQuad((n / num_frames)) * starting_y \
+                for n in range(num_frames + 1)
         ]
-        self.heights += [starting_height for _ in range(delay)]
-        self.heights.reverse()
-        self.height_step = 1
+        raw_positions += [starting_y for _ in range(delay)]
+        raw_positions.reverse()
+        raw_positions = [pg.math.Vector2(0, y) for y in raw_positions]
+        self.set_offsets_from_raw_positions(
+            raw_positions, start_value=pg.math.Vector2(0, starting_y))
 
     def build_flyaway_animation(self):
-        animation_frames = self.fade_counter // 7
-        target_height = 50 + randint(0, 16)
-        self.heights = [
-            pytweening.easeInQuad((n / animation_frames)) * target_height \
-                for n in range(animation_frames + 1)
+        num_frames = self.fade_counter // 7
+        target_y = randint(-66, -50)
+        raw_positions = [
+            pytweening.easeInQuad((n / num_frames)) * target_y \
+                for n in range(num_frames + 1)
         ]
-        self.height_step = 1
+        raw_positions = [pg.math.Vector2(0, y) for y in raw_positions]
+        self.set_offsets_from_raw_positions(raw_positions)
+
+    def build_slide_animation(self, start_pos: tuple[int], end_pos: tuple[int]):
+        ...  # TODO
 
     def draw(self):
         pass
 
     def get_height(self) -> float:
-        if self.heights:
-            return self.heights[self.height_step]
+        if self.offsets:
+            return self.offsets[self.offset_step]
         else:
             return 0
 
@@ -110,9 +117,21 @@ class Dice(pg.sprite.Sprite):
         self.row = row
         self.col = col
 
-    def set_pos(self, pos: tuple[int]):
-        self.pos = pg.math.Vector2(pos)
+    def set_offsets_from_raw_positions(
+        self, raw_positions: list[pg.math.Vector2],
+        start_value: pg.math.Vector2 | None = None):
+        if start_value is None:
+            self.offsets = []
+        else:
+            self.offsets = [start_value]
+
+        for n in range(1, len(raw_positions)):
+            self.offsets.append(raw_positions[n] - raw_positions[n - 1])
+
+    def set_pos(self):
+        if self.offsets:
+            self.pos += self.offsets[self.offset_step]
 
     def update(self):
+        self.set_pos()
         self.animate()
-        # self.draw()

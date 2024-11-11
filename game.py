@@ -12,6 +12,10 @@ def _roll_d6() -> int:
     return randint(1, 6)
 
 
+def _sort_by_z_index(d1: Dice, d2: Dice) -> int:
+    ...  # TODO
+
+
 class Move():
     def __init__(self, name: str, axis: str, value: int):
         self.name  = name   # [ne, nw, se, sw]
@@ -113,18 +117,21 @@ class Game():
                     die.kill(delay=n)
             elif neighbor_die.value == -1:
                 print('Move into empty space')
-                die.set_coords(
-                    *self.get_destination_space(die, move=self.move_queue[0]))
-                self.board.set_die_pos(die)
+                start_pos = self.board.get_die_pos(die.row, die.col)
+                target_coords = self.get_destination_coords(
+                    die, move=self.move_queue[0])
+                end_pos = self.board.get_die_pos(*target_coords)
+                die.set_coords(target_coords)
+                die.build_slide_animation(start_pos, end_pos)
             else:
                 print('No match')
         else:
             print('Off edge of board')
 
-    def get_destination_space(self, die: Dice, move: Move) -> tuple[int]:
+    def get_destination_coords(self, die: Dice, move: Move) -> tuple[int]:
         """
         Checks spaces along {axis} in {move.value} direction until
-        it finds and returns coords for:
+        it finds and returns coords (row, col) for:
             1. The space adjacent to another die, or
             2. The last space on the board in {move.value} direction
             along {axis}

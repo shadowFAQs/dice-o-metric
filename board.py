@@ -1,6 +1,8 @@
+from functools import cmp_to_key
 from itertools import chain
 from pathlib import Path
 from random import randint
+from typing import Callable
 
 import pygame as pg
 from shapely import Point, Polygon
@@ -41,17 +43,21 @@ class Board(pg.sprite.Sprite):
         for row in range(self.num_rows):
             for col in range(self.num_cols - 1, -1, -1):
                 die = self.dice[row][col]
-                self.image.blit(die.get_image(),
-                                die.pos - (0, die.get_height()))
+                self.image.blit(die.get_image(), die.pos)
 
         if self.show_highlight:
             highlight = self.sprite_sheet.highlight \
                 if self.show_highlight == 1 else self.sprite_sheet.dimlight
             self.image.blit(highlight, self.highlight_coords)
 
-    def get_all_dice(self) -> list[Dice]:
+    def get_all_dice(
+        self, func: Callable[[Dice, Dice], int] | None = None) -> list[Dice]:
         """Returns flattened list from 2D list"""
-        return list(chain(*self.dice))
+        flat_list = list(chain(*self.dice))
+        if not func:
+            return flat_list
+
+        return sorted(flat_list, key=cmp_to_key(func))
 
     def get_die_from_coords(self, row: int, col: int) -> Dice:
         if not (-1 < col < 8) or not (-1 < row < 8):
@@ -100,7 +106,7 @@ class Board(pg.sprite.Sprite):
                                                 col=start.col)
             else:
                 return self.get_die_from_coords(row=start.row,
-                                                   col=start.col + move.value)
+                                                col=start.col + move.value)
         except IndexError:
             print('Off the edge of the board')
             return None
@@ -108,7 +114,7 @@ class Board(pg.sprite.Sprite):
     def highlight_hovered_die(self):
         die = self.get_hovered_die()
         if die:
-            if die.heights:  # Don't highlight during animation
+            if die.offsets:  # Don't highlight during animation
                 self.show_highlight = 0
                 return
 
@@ -123,9 +129,6 @@ class Board(pg.sprite.Sprite):
                     self.show_highlight = 1
         else:
             self.show_highlight = 0
-
-    def set_die_pos(self, die: Dice):
-        die.set_pos(self.get_die_pos(die.row, die.col))
 
     def spawn_dice(self):
         from game import _roll_d6
