@@ -107,39 +107,22 @@ class Game():
         self.board.show_highlight = 0
 
         try:
-            coords = self.get_coords_in_direction(
-                die.row, die.col, self.move_queue[0])
+            coords = self.board.get_coords_in_direction(
+                die.row, die.col, self.move_queue[0].axis,
+                self.move_queue[0].value)
             neighbor_die = self.board.get_die_from_coords(*coords)
             if neighbor_die:
-                if neighbor_die.value == die.value:  # Match
-                    for n, die in enumerate(
-                        self.get_matching_neighbors(matching_value = die.value,
-                                                    match=die)):
-                        die.kill(delay=n)
-                    return 0
-                else:
-                    return 1  # No match / bump
+                return self.board.try_match(die, neighbor_die)
             else:  # Slide
                 target_coords = self.get_destination_coords(
                     die, move=self.move_queue[0])
                 start_pos = self.board.get_die_pos(die.row, die.col)
                 end_pos = self.board.get_die_pos(*target_coords)
                 die.set_coords(*target_coords)
-                die.build_slide_animation(start_pos, end_pos)
+                die.slide(start_pos, end_pos, self.move_queue[0])
                 return 0
         except IndexError:
             return 2  # At edge of board
-
-    def get_coords_in_direction(self, start_row: int, start_col: int,
-                                move: Move) -> tuple[int]:
-        if move.axis == 'row':
-            if not -1 < start_row + move.value < 8:
-                raise IndexError
-            return start_row + move.value, start_col
-        else:
-            if not -1 < start_col + move.value < 8:
-                raise IndexError
-            return start_row, start_col + move.value
 
     def get_destination_coords(self, die: Dice, move: Move) -> tuple[int]:
         """
@@ -152,7 +135,8 @@ class Game():
         empty_coords = (die.row, die.col)
 
         try:
-            coords = self.get_coords_in_direction(die.row, die.col, move)
+            coords = self.board.get_coords_in_direction(
+                die.row, die.col, move.axis, move.value)
             blocker = self.board.get_die_from_coords(*coords)
         except IndexError:  # Off the edge of the board
             return empty_coords
@@ -160,52 +144,20 @@ class Game():
         try:
             while not blocker:
                 empty_coords = coords
-                coords = self.get_coords_in_direction(
-                    coords[0], coords[1], move)
+                coords = self.board.get_coords_in_direction(
+                    coords[0], coords[1], move.axis, move.value)
                 blocker = self.board.get_die_from_coords(*coords)
         except IndexError:
             return empty_coords
 
         return empty_coords
 
-    def get_matching_neighbors(self, matching_value: int,
-                               match: Dice) -> list[Dice]:
-        def explore(row: int, col: int, visited: set[Dice] | None = None):
-            if visited is None:
-                visited = set()
+    def is_animating(self) -> bool:
+        for die in self.board.dice:
+            if die.is_animating():
+                return True
 
-            die = self.board.get_die_from_coords(row, col)
-            if die in visited:
-                return
-
-            visited.add(die)
-
-            if die.value == matching_value:
-                result.add(die)
-
-                for neighbor in self.get_neighbors(die):
-                    explore(neighbor.row, neighbor.col, visited)
-
-        result = set([match])
-        explore(match.row, match.col)
-        return list(result)
-
-    def get_neighbors(self, die: Dice) -> list[Dice]:
-        neighbors = []
-        nw_neighbor = (die.row - 1, die.col)
-        ne_neighbor = (die.row, die.col + 1)
-        se_neighbor = (die.row + 1, die.col)
-        sw_neighbor = (die.row, die.col - 1)
-        neighbor_coords = [nw_neighbor, ne_neighbor, se_neighbor, sw_neighbor]
-        for coord in neighbor_coords:
-            try:
-                neighbor = self.board.get_die_from_coords(*coord)
-                if neighbor:
-                    neighbors.append(neighbor)
-            except IndexError:
-                continue
-
-        return neighbors
+        return False
 
     def update(self, mouse_motion: bool):
         self.board.update(mouse_motion)

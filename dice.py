@@ -33,6 +33,7 @@ class Dice(pg.sprite.Sprite):
         self.freeze_z_index   = False
         self.ghost            = False
         self.rect             = self.image.get_rect()
+        self.slide_direction  = None
         self.offset_step      = 0
         self.offsets          = []  # List of pg.math.Vector2
         self.z_index          = 0
@@ -103,6 +104,9 @@ class Dice(pg.sprite.Sprite):
 
         self.set_offsets_from_raw_positions(raw_positions)
 
+    def end_slide(self):
+        self.slide_direction = None
+
     def get_height(self) -> float:
         if self.offsets:
             return self.offsets[self.offset_step]
@@ -119,7 +123,7 @@ class Dice(pg.sprite.Sprite):
             return self.image
 
     def is_animating(self) -> bool:
-        return bool(self.offsets) or bool(self.animation_frames)
+        return self.offsets or self.animation_frames
 
     def kill(self, delay: int):
         self.value = -1
@@ -152,6 +156,10 @@ class Dice(pg.sprite.Sprite):
 
             if not self.freeze_z_index:
                 self.z_index = self.pos.y
+
+    def slide(self, start_pos: tuple[int], end_pos: tuple[int], move: 'Move'):
+        self.build_slide_animation(start_pos, end_pos)
+        self.slide_direction = {'axis': move.axis, 'value': move.value}
 
     def update(self):
         self.set_pos()

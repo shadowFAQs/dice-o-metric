@@ -53,6 +53,17 @@ class Board(pg.sprite.Sprite):
 
         return sorted(self.dice, key=lambda d: d.z_index)  # Sort by draw order
 
+    def get_coords_in_direction(self, start_row: int, start_col: int, axis: str,
+                                value: int) -> tuple[int]:
+        if axis == 'row':
+            if not -1 < start_row + value < 8:
+                raise IndexError
+            return start_row + value, start_col
+        else:
+            if not -1 < start_col + value < 8:
+                raise IndexError
+            return start_row, start_col + value
+
     def get_die_from_coords(self, row: int, col: int) -> Dice | None:
         if not (-1 < col < 8) or not (-1 < row < 8):
             raise IndexError
@@ -91,6 +102,28 @@ class Board(pg.sprite.Sprite):
 
         return None
 
+    def get_matching_neighbors(self, matching_value: int,
+                               match: Dice) -> list[Dice]:
+        def explore(row: int, col: int, visited: set[Dice] | None = None):
+            if visited is None:
+                visited = set()
+
+            die = self.get_die_from_coords(row, col)
+            if die in visited:
+                return
+
+            visited.add(die)
+
+            if die.value == matching_value:
+                result.add(die)
+
+                for neighbor in self.get_neighbors(die):
+                    explore(neighbor.row, neighbor.col, visited)
+
+        result = set([match])
+        explore(match.row, match.col)
+        return list(result)
+
     def get_mouse_pos(self) -> pg.math.Vector2:
         return (
             pg.mouse.get_pos() - BOARD_POS) / 2 - (TILE_GAP * 2, TILE_GAP * 2)
@@ -103,6 +136,23 @@ class Board(pg.sprite.Sprite):
         else:
             return self.get_die_from_coords(row=start.row,
                                             col=start.col + move.value)
+
+    def get_neighbors(self, die: Dice) -> list[Dice]:
+        neighbors = []
+        nw_neighbor = (die.row - 1, die.col)
+        ne_neighbor = (die.row, die.col + 1)
+        se_neighbor = (die.row + 1, die.col)
+        sw_neighbor = (die.row, die.col - 1)
+        neighbor_coords = [nw_neighbor, ne_neighbor, se_neighbor, sw_neighbor]
+        for coord in neighbor_coords:
+            try:
+                neighbor = self.get_die_from_coords(*coord)
+                if neighbor:
+                    neighbors.append(neighbor)
+            except IndexError:
+                continue
+
+        return neighbors
 
     def highlight_hovered_die(self):
         die = self.get_hovered_die()
@@ -155,6 +205,16 @@ class Board(pg.sprite.Sprite):
                              animation_delay, images)
                     )
 
+    def try_match(self, die: Dice, neighbor: Dice) -> int:
+        if neighbor.value == die.value:
+            for n, die in enumerate(
+                self.get_matching_neighbors(
+                    matching_value = die.value, match=die)):
+                die.kill(delay=n)
+            return 0
+
+        return 1
+
     def update(self, mouse_motion: bool):
         if mouse_motion:
             self.highlight_hovered_die()
@@ -162,7 +222,20 @@ class Board(pg.sprite.Sprite):
         for die in self.get_all_dice():
             die.update()
 
-            if die.value == -1 and not die.is_animating():
-                self.remove_die(die)
+            if not die.is_animating():
+                if die.slide_direction:
+                    try:
+                        coords = self.get_coords_in_direction(
+                            die.row, die.col, die.slide_direction['axis'],
+                            die.slide_direction['value'])
+                        neighbor_die = self.get_die_from_coords(*coords)
+                        self.try_match(die, neighbor_die)
+                    except IndexError:  # Bumped into edge of board
+                        pass
+                    finally:
+                        die.end_slide()
+
+                elif die.value == -1:
+                    self.remove_die(die)
 
         self.draw()
