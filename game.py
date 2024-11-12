@@ -3,7 +3,6 @@ from random import randint
 import pygame as pg
 
 from board import Board
-from const import SCREEN_SIZE
 from dice import Dice
 from image import SpriteSheet
 from move_queue import Move, Queue

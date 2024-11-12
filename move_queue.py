@@ -101,11 +101,7 @@ class Queue():
 
             self.image.blit(move.active_image, move.pos)
 
-        self.image.blit(
-            self.sprite_sheet.next_badge,
-            NEXT_BADGE_POS + \
-                (self.move_width * self.active_move_index, 0) + \
-                 self.offsets[self.offset_step])
+        self.image.blit(self.sprite_sheet.next_badge, NEXT_BADGE_POS)
 
     def get_active_move(self) -> Move:
         return self.moves[self.active_move_index]

@@ -52,8 +52,8 @@ class SpriteSheet():
             self.dark_arrows[arrow_names[n]].blit(
                 self.sprite_sheet, (-ARROW_SIZE.x * n, -160))
 
-        self.next_badge = pg.Surface((47, 16), pg.SRCALPHA)
-        self.next_badge.blit(self.sprite_sheet, (-264, -100))
+        self.next_badge = pg.Surface(ARROW_SIZE + (0, 6), pg.SRCALPHA)
+        self.next_badge.blit(self.sprite_sheet, (-264, -95))
 
         queue_track = pg.Surface((96, 14), pg.SRCALPHA)
         queue_track.blit(self.sprite_sheet, (-224, -17))
