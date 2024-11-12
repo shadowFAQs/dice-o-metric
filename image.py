@@ -2,8 +2,8 @@ from pathlib import Path
 
 import pygame as pg
 
-from const import Color, ARROW_SIZE, DIE_SPRITE_SIZE, MOVE_QUEUE_POS, \
-                  SCREEN_SIZE, SELECTION_SIZE
+from const import Color, ARROW_SIZE, DIE_SPRITE_SIZE, SCREEN_SIZE, \
+                  SELECTION_SIZE
 
 
 class SpriteSheet():
@@ -55,11 +55,10 @@ class SpriteSheet():
         self.next_badge = pg.Surface((47, 16), pg.SRCALPHA)
         self.next_badge.blit(self.sprite_sheet, (-264, -100))
 
-        # Move queue "track"
-        queue_bg = pg.Surface((96, 14), pg.SRCALPHA)
-        queue_bg.blit(self.sprite_sheet, (-224, -17))
-        self.queue_bg = pg.Surface((SCREEN_SIZE.x / 2, 14), pg.SRCALPHA)
+        queue_track = pg.Surface((96, 14), pg.SRCALPHA)
+        queue_track.blit(self.sprite_sheet, (-224, -17))
+        self.queue_track = pg.Surface((SCREEN_SIZE.x / 2, 14), pg.SRCALPHA)
         for n in range(5):
-            self.queue_bg.blit(queue_bg, (96 * n, 0))
+            self.queue_track.blit(queue_track, (96 * n, 0))
 
         self.info_bg = pg.image.load(Path('img') / 'info_bg.bmp')

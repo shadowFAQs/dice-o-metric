@@ -1,7 +1,6 @@
 import pygame as pg
 
-from const import Color, BOARD_POS, INFO_POS, MOVE_QUEUE_POS, NEXT_BADGE_POS, \
-                  SCREEN_SIZE
+from const import Color, BOARD_POS, INFO_POS, SCREEN_SIZE
 from dice import Dice
 from game import Game
 
@@ -34,11 +33,7 @@ def main():
         screen.fill(color.black)
         screen.blit(game.sprite_sheet.info_bg, INFO_POS)
         screen.blit(game.board.image, BOARD_POS)
-        screen.blit(game.sprite_sheet.queue_bg, (0, 47))
-        for n, move in enumerate(game.move_queue.moves):
-            image_type = 'dark_image' if n else 'image'
-            screen.blit(getattr(move, image_type), MOVE_QUEUE_POS + (68 * n, 0))
-        screen.blit(game.sprite_sheet.next_badge, NEXT_BADGE_POS)
+        screen.blit(game.move_queue.image, (0, 0))
 
         # Double and draw 2x screen
         screen_2x.fill(color.black)
@@ -53,5 +48,3 @@ if __name__ == '__main__':
     pg.display.set_caption('Dice')
 
     main()
-
-    # Idea: Add a move type which will rotate dice so that one of the "inactive" but visible faces is up?
