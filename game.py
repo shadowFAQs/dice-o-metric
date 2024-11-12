@@ -9,6 +9,17 @@ from image import SpriteSheet
 from move_queue import Move, Queue
 
 
+def _convert_raw_positions_to_offsets(
+    raw_positions: list[pg.math.Vector2],
+    start_value: pg.math.Vector2 | None = None) -> list[pg.math.Vector2]:
+    offsets = [] if start_value is None else [start_value]
+
+    for n in range(1, len(raw_positions)):
+        offsets.append(raw_positions[n] - raw_positions[n - 1])
+
+    return offsets
+
+
 def _roll_d6() -> int:
     return randint(1, 6)
 

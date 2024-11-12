@@ -68,6 +68,8 @@ class Dice(pg.sprite.Sprite):
                 self.ghost = True
 
     def build_drop_animation(self, animation_delay: int):
+        from game import _convert_raw_positions_to_offsets
+
         num_frames = 40 + randint(-4, 4)
         delay = animation_delay
         starting_y = -320
@@ -79,12 +81,14 @@ class Dice(pg.sprite.Sprite):
         raw_positions += [starting_y for _ in range(delay)]
         raw_positions.reverse()
         raw_positions = [pg.math.Vector2(0, y) for y in raw_positions]
-        self.set_offsets_from_raw_positions(
+        self.offsets = _convert_raw_positions_to_offsets(
             raw_positions, start_value=pg.math.Vector2(0, starting_y))
         self.z_index = self.pos.y
         self.freeze_z_index = True
 
     def build_flyaway_animation(self):
+        from game import _convert_raw_positions_to_offsets
+
         num_frames = self.fade_counter // 7
         target_y = randint(-66, -50)
         raw_positions = [
@@ -92,17 +96,19 @@ class Dice(pg.sprite.Sprite):
                 for n in range(num_frames + 1)
         ]
         raw_positions = [pg.math.Vector2(0, y) for y in raw_positions]
-        self.set_offsets_from_raw_positions(raw_positions)
+        self.offsets = _convert_raw_positions_to_offsets(raw_positions)
         self.z_index = self.pos.y
         self.freeze_z_index = True
 
     def build_slide_animation(self, start_pos: tuple[int], end_pos: tuple[int]):
+        from game import _convert_raw_positions_to_offsets
+
         raw_positions = []
         for x, y in pytweening.iterLinear(
             start_pos[0], start_pos[1], end_pos[0], end_pos[1], 0.1):
             raw_positions.append(pg.math.Vector2(x, y))
 
-        self.set_offsets_from_raw_positions(raw_positions)
+        self.offsets = _convert_raw_positions_to_offsets(raw_positions)
 
     def end_slide(self):
         self.slide_direction = None
@@ -138,17 +144,6 @@ class Dice(pg.sprite.Sprite):
     def set_coords(self, row: int, col: int):
         self.row = row
         self.col = col
-
-    def set_offsets_from_raw_positions(
-        self, raw_positions: list[pg.math.Vector2],
-        start_value: pg.math.Vector2 | None = None):
-        if start_value is None:
-            self.offsets = []
-        else:
-            self.offsets = [start_value]
-
-        for n in range(1, len(raw_positions)):
-            self.offsets.append(raw_positions[n] - raw_positions[n - 1])
 
     def set_pos(self):
         if self.offsets:

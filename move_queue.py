@@ -1,16 +1,18 @@
 from random import randint
 
 import pygame as pg
+import pytweening
 
 from const import Color, MOVE_QUEUE_SIZE, MOVES, NEXT_BADGE_POS, SCREEN_SIZE
 from image import SpriteSheet
 
 
 class Move():
-    def __init__(self, name: str, axis: str, value: int):
+    def __init__(self, name: str, axis: str, value: int, pos: pg.math.Vector2):
         self.name  = name   # [ne, nw, se, sw]
         self.axis  = axis   # [row, col]
         self.value = value  # [-1, 1]
+        self.pos   = pos
 
         self.active_image = None
         self.base_image   = None
@@ -37,11 +39,14 @@ class Queue():
         self.max_moves         = 7
         self.move_width        = 68
         self.moves             = [None, None, None]
-        self.offset_x          = 0
+        self.offset_step       = 0
+        self.offsets           = []
 
         while len(self.moves) < self.max_moves:
             self.spawn_move()
         self.moves[self.active_move_index].activate()
+
+        self.build_animation()
 
     def __getitem__(self, index: int) -> Move:
         return self.moves[index]
@@ -49,15 +54,28 @@ class Queue():
     def advance(self):
         self.spawn_move()
         self.active_move_index = 4
-        self.offset_x = -1
+        self.offset_step = 1
 
     def animate(self):
-        if self.offset_x:
-            if self.offset_x > -self.move_width:
-                self.offset_x -= 1
+        if self.offset_step:
+            if self.offset_step < len(self.offsets) - 1:
+                self.offset_step += 1
             else:
                 self.delete_offscreen_move()
-                self.offset_x = 0
+                self.offset_step = 0
+
+    def build_animation(self):
+        from game import _convert_raw_positions_to_offsets
+
+        num_frames = 30
+        target_x = -68
+
+        raw_positions = [
+            pytweening.easeInOutQuad((n / num_frames)) * target_x \
+                for n in range(num_frames + 1)
+        ]
+        raw_positions = [pg.math.Vector2(x, 0) for x in raw_positions]
+        self.offsets = _convert_raw_positions_to_offsets(raw_positions)
 
     def delete_offscreen_move(self):
         self.moves.pop(0)
@@ -76,26 +94,33 @@ class Queue():
             else:
                 move.deactivate()
 
-            self.image.blit(
-                move.active_image, (self.move_width * n + self.offset_x, 0))
+            if self.offset_step:
+                move.pos += self.offsets[self.offset_step]
+            else:
+                move.pos = pg.math.Vector2(self.move_width * n, 0)
+
+            self.image.blit(move.active_image, move.pos)
 
         self.image.blit(
             self.sprite_sheet.next_badge,
             NEXT_BADGE_POS + \
-                (self.move_width * self.active_move_index + self.offset_x, 0))
+                (self.move_width * self.active_move_index, 0) + \
+                 self.offsets[self.offset_step])
 
     def get_active_move(self) -> Move:
         return self.moves[self.active_move_index]
 
     def is_animating(self) -> bool:
-        return bool(self.offset_x)
+        return bool(self.offset_step)
 
     def spawn_move(self):
-            self.moves.append(Move(*MOVES[randint(0, 3)]))
-            self.moves[-1].base_image = self.sprite_sheet.arrows[self.moves[-1].name]
-            self.moves[-1].dark_image = self.sprite_sheet.dark_arrows[
-                self.moves[-1].name]
-            self.moves[-1].active_image = self.moves[-1].dark_image
+        num_moves = len(self.moves)
+        move = Move(*MOVES[randint(0, 3)], pos=(self.move_width * num_moves, 0))
+        move.base_image = self.sprite_sheet.arrows[move.name]
+        move.dark_image = self.sprite_sheet.dark_arrows[move.name]
+        move.active_image = move.dark_image
+
+        self.moves.append(move)
 
     def update(self):
         self.animate()
