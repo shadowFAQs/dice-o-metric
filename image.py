@@ -2,8 +2,8 @@ from pathlib import Path
 
 import pygame as pg
 
-from const import Color, ARROW_SIZE, DIE_SPRITE_SIZE, SCREEN_SIZE, \
-                  SELECTION_SIZE
+from const import Color, ARROW_SIZE, DIE_SPRITE_SIZE, SCORE_LETTER_SIZE, \
+                  SCREEN_SIZE, SELECTION_SIZE
 
 
 class SpriteSheet():
@@ -62,3 +62,12 @@ class SpriteSheet():
             self.queue_track.blit(queue_track, (96 * n, 0))
 
         self.info_bg = pg.image.load(Path('img') / 'info_bg.bmp')
+
+        self.score_font = {}
+        for n in range(10):
+            self.score_font[str(n)] = pg.Surface(SCORE_LETTER_SIZE, pg.SRCALPHA)
+            self.score_font[str(n)].blit(
+                self.sprite_sheet, (n * -SCORE_LETTER_SIZE.x, -224))
+        self.score_font['+'] = pg.Surface(SCORE_LETTER_SIZE, pg.SRCALPHA)
+        self.score_font['+'].blit(
+                self.sprite_sheet, (10 * -SCORE_LETTER_SIZE.x, -224))

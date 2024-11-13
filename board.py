@@ -4,8 +4,8 @@ from random import randint
 import pygame as pg
 from shapely import Point, Polygon
 
-from const import Color, BOARD_POS, DIE_SPRITE_SIZE, SCREEN_SIZE, TILE_GAP, \
-                  TILE_SIZE
+from const import Color, BOARD_POS, DIE_SPRITE_SIZE, SCREEN_SIZE, \
+                  SCORE_LETTER_SIZE, SCORE_LETTER_WIDTHS, TILE_GAP, TILE_SIZE
 from dice import Dice
 from image import SpriteSheet
 
@@ -14,11 +14,13 @@ class Board(pg.sprite.Sprite):
     def __init__(self, sprite_sheet: SpriteSheet):
         pg.sprite.Sprite.__init__(self)
 
+        self.sprite_sheet     = sprite_sheet
+
         self.chosen_die       = None
         self.num_cols         = 8
         self.num_rows         = 8
+        self.score_displays   = []
         self.scoring_move     = []  # List of int
-        self.sprite_sheet     = sprite_sheet
 
         self.color            = Color()
         self.dice             = []
@@ -45,6 +47,9 @@ class Board(pg.sprite.Sprite):
             highlight = self.sprite_sheet.highlight \
                 if self.show_highlight == 1 else self.sprite_sheet.dimlight
             self.image.blit(highlight, self.highlight_coords)
+
+        for score_display in self.score_displays:
+            self.image.blit(score_display['image'], score_display['pos'])
 
     def get_all_dice(self, sort: bool = False) -> list[Dice]:
         """Returns flattened list from 2D list"""
@@ -205,6 +210,18 @@ class Board(pg.sprite.Sprite):
                              animation_delay, images)
                     )
 
+    def spawn_score_display(self, pos: pg.math.Vector2, die_value: int,
+                            points: int):
+        text = f'+{points}'
+        width = sum([SCORE_LETTER_WIDTHS[letter] for letter in text])
+        image = pg.Surface((width, SCORE_LETTER_SIZE.y), pg.SRCALPHA)
+        offset_x = 0
+        for letter in text:
+            image.blit(self.sprite_sheet.score_font[letter], (offset_x, 0))
+            offset_x += SCORE_LETTER_WIDTHS[letter]
+
+        self.score_displays.append({'counter': 60, 'image': image, 'pos': pos})
+
     def try_match_and_store_score(self, die: Dice, neighbor: Dice) -> int:
         scoring_move = []
 
@@ -242,6 +259,12 @@ class Board(pg.sprite.Sprite):
 
                 elif die.value == -1:
                     self.remove_die(die)
+
+        if self.score_displays:
+            self.score_displays = [s for s in self.score_displays \
+                                   if s['counter']]
+            for score_display in self.score_displays:
+                score_display['counter'] -= 1
 
         self.draw()
 

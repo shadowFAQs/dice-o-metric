@@ -106,9 +106,15 @@ class Game():
         return False
 
     def score_move(self):
-        self.score += BASE_SCORE * self.level * len(self.board.scoring_move) \
-            + self.board.scoring_move[0] * self.level
+        die_value = self.board.scoring_move[0]
+        num_dice = len(self.board.scoring_move)
+        total = BASE_SCORE * self.level * num_dice + die_value * self.level
+        self.score += total
         self.board.scoring_move = []
+
+        self.board.spawn_score_display(
+            pg.math.Vector2(pg.mouse.get_pos()) / 2 + (-10, -34), die_value,
+            total)
 
     def update(self, mouse_motion: bool):
         if self.board.scoring_move:
