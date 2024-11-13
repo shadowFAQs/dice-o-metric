@@ -41,6 +41,7 @@ class Game():
         self.info         = Info(self.sprite_sheet, font)
         self.level        = 1
         self.move_queue   = Queue(self.sprite_sheet)
+        self.num_moves    = 0
         self.score        = 0
 
     def choose_die(self):
@@ -50,6 +51,7 @@ class Game():
                 status = self.execute_move(self.board.chosen_die)
                 if status == 0:  # Successful move
                     self.move_queue.advance()
+                    self.num_moves += 1
 
     def execute_move(self, die: Dice) -> int:
         """Main game logic"""
@@ -128,4 +130,4 @@ class Game():
 
         self.board.update(mouse_motion)
         self.move_queue.update()
-        self.info.update(self.score, self.level)
+        self.info.update(self.score, self.level, self.num_moves)

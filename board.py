@@ -24,6 +24,7 @@ class Board(pg.sprite.Sprite):
 
         self.color            = Color()
         self.dice             = []
+        self.shadows          = []
         self.highlight_coords = pg.math.Vector2(0, 0)
         self.show_highlight   = 0  # [-1, 0, 1]
 
@@ -39,6 +40,9 @@ class Board(pg.sprite.Sprite):
     def draw(self):
         self.image.fill(self.color.black)
         self.image.blit(self.background_image, (0, 0))
+
+        for shadow_pos in self.shadows:
+            self.image.blit(self.sprite_sheet.shadow, shadow_pos)
 
         for die in self.get_all_dice(sort=True):
             self.image.blit(die.get_image(), die.pos)
@@ -208,6 +212,8 @@ class Board(pg.sprite.Sprite):
                              animation_delay, images)
                     )
 
+                self.shadows.append(self.get_die_pos(row, col) + (0, 19))
+
     def spawn_score_display(self, pos: pg.math.Vector2, die_value: int,
                             points: int):
         text = f'+{points}'
@@ -280,10 +286,10 @@ class Info():
         self.font = font
         self.image = self.sprite_sheet.info_bg.copy()
 
-    def update(self, score: int, level: int):
-        # TODO: Consume {level}
+    def update(self, score: int, level: int, moves: int):
         self.image.fill(self.color.black)
         self.image.blit(self.sprite_sheet.info_bg, (0, 0))
 
-        score_text = self.font.render(str(score), False, self.color.white)
-        self.image.blit(score_text, (128 - score_text.get_width(), 39))
+        for n, text in enumerate([score, level, moves]):
+            image = self.font.render(str(text), False, self.color.white)
+            self.image.blit(image, (128 - image.get_width(), 40 + n * 30))

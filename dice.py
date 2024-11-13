@@ -32,6 +32,7 @@ class Dice(pg.sprite.Sprite):
         self.current_frame    = 0
         self.freeze_z_index   = False
         self.ghost            = False
+        self.pre_kill_pos     = pos.copy() + (0, 19)
         self.rect             = self.image.get_rect()
         self.slide_direction  = None
         self.offset_step      = 0

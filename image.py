@@ -34,10 +34,14 @@ class SpriteSheet():
             self.sprite_sheet, (DIE_SPRITE_SIZE.x * -8, -48))
 
         self.highlight = pg.Surface(SELECTION_SIZE, pg.SRCALPHA)
-        self.highlight.blit(self.sprite_sheet, (-7 * 32, 0))
+        self.highlight.blit(self.sprite_sheet, (-224, 0))
 
         self.dimlight = pg.Surface(SELECTION_SIZE, pg.SRCALPHA)
-        self.dimlight.blit(self.sprite_sheet, (-8 * 32, 0))
+        self.dimlight.blit(self.sprite_sheet, (-256, 0))
+
+        self.shadow = pg.Surface(SELECTION_SIZE, pg.SRCALPHA)
+        self.shadow.blit(self.sprite_sheet, (-288, 0))
+        self.shadow.set_alpha(32)
 
         arrow_names = ['ne', 'nw', 'sw', 'se']
         self.arrows = {}
