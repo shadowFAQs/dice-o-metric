@@ -42,7 +42,31 @@ class Game():
         self.level        = 1
         self.move_queue   = Queue(self.sprite_sheet)
         self.num_moves    = 0
+        self.paused       = False
         self.score        = 0
+
+    def check_win(self) -> int:
+        """
+        Returns:
+            0: At least 1 possible match remains (no win)
+            1: Some dice remain, but no possible moves (misson complete)
+            2: No dice remain (mission accomplished)
+        """
+        counts = [0] * 7
+        for die in self.board.get_all_dice():
+            counts[die.value] += 1
+
+        try:
+            counts.pop(0)  # Ignore "rock" dice
+            if not sum(counts):
+                return 2
+        except IndexError:
+            return 2
+
+        if any([c > 1 for c in counts]):
+            return 0
+
+        return 1
 
     def choose_die(self):
         self.board.choose_die_under_mouse()
@@ -131,3 +155,17 @@ class Game():
         self.board.update(mouse_motion)
         self.move_queue.update()
         self.info.update(self.score, self.level, self.num_moves)
+
+        if self.paused:
+            return
+
+        win_status = self.check_win()
+        if win_status:
+            self.win(win_status)
+
+    def win(self, status: int):
+        self.paused = True
+        if status == 1:
+            print('Mission complete')
+        else:
+            print('Mission accomplished!')
