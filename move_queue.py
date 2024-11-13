@@ -67,7 +67,7 @@ class Queue():
     def build_animation(self):
         from game import _convert_raw_positions_to_offsets
 
-        num_frames = 30
+        num_frames = 20
         target_x = -68
 
         raw_positions = [

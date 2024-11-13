@@ -2,7 +2,8 @@ from random import randint
 
 import pygame as pg
 
-from board import Board
+from board import Board, Info
+from const import BASE_SCORE
 from dice import Dice
 from image import SpriteSheet
 from move_queue import Move, Queue
@@ -28,9 +29,11 @@ def _sort_by_z_index(d: Dice) -> int:
 
 
 class Game():
-    def __init__(self):
+    def __init__(self, font: pg.font.Font):
         self.sprite_sheet = SpriteSheet()
         self.board        = Board(self.sprite_sheet)
+        self.info         = Info(self.sprite_sheet, font)
+        self.level        = 1
         self.move_queue   = Queue(self.sprite_sheet)
         self.score        = 0
 
@@ -46,14 +49,14 @@ class Game():
         """Main game logic"""
         self.board.show_highlight = 0
 
-        try:
+        try:                # Match with bumped neighbor
             coords = self.board.get_coords_in_direction(
                 die.row, die.col, self.move_queue.get_active_move().axis,
                 self.move_queue.get_active_move().value)
             neighbor_die = self.board.get_die_from_coords(*coords)
             if neighbor_die:
-                return self.board.try_match(die, neighbor_die)
-            else:  # Slide
+                return self.board.try_match_and_store_score(die, neighbor_die)
+            else:           # Slide
                 target_coords = self.get_destination_coords(
                     die, move=self.move_queue.get_active_move())
                 start_pos = self.board.get_die_pos(die.row, die.col)
@@ -61,8 +64,8 @@ class Game():
                 die.set_coords(*target_coords)
                 die.slide(start_pos, end_pos, self.move_queue.get_active_move())
                 return 0
-        except IndexError:
-            return 2  # At edge of board
+        except IndexError:  # At edge of board
+            return 2
 
     def get_destination_coords(self, die: Dice, move: Move) -> tuple[int]:
         """
@@ -102,6 +105,15 @@ class Game():
 
         return False
 
+    def score_move(self):
+        self.score += BASE_SCORE * self.level * len(self.board.scoring_move) \
+            + self.board.scoring_move[0] * self.level
+        self.board.scoring_move = []
+
     def update(self, mouse_motion: bool):
+        if self.board.scoring_move:
+            self.score_move()
+
         self.board.update(mouse_motion)
         self.move_queue.update()
+        self.info.update(self.score, self.level)

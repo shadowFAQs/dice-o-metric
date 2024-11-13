@@ -1,6 +1,5 @@
 from pathlib import Path
 from random import randint
-from typing import Callable
 
 import pygame as pg
 from shapely import Point, Polygon
@@ -18,6 +17,7 @@ class Board(pg.sprite.Sprite):
         self.chosen_die       = None
         self.num_cols         = 8
         self.num_rows         = 8
+        self.scoring_move     = []  # List of int
         self.sprite_sheet     = sprite_sheet
 
         self.color            = Color()
@@ -205,12 +205,17 @@ class Board(pg.sprite.Sprite):
                              animation_delay, images)
                     )
 
-    def try_match(self, die: Dice, neighbor: Dice) -> int:
+    def try_match_and_store_score(self, die: Dice, neighbor: Dice) -> int:
+        scoring_move = []
+
         if neighbor.value == die.value:
             for n, die in enumerate(
                 self.get_matching_neighbors(
                     matching_value = die.value, match=die)):
+                scoring_move.append(die.value)
                 die.kill(delay=n)
+
+            self.scoring_move = scoring_move
             return 0
 
         return 1
@@ -229,7 +234,7 @@ class Board(pg.sprite.Sprite):
                             die.row, die.col, die.slide_direction['axis'],
                             die.slide_direction['value'])
                         neighbor_die = self.get_die_from_coords(*coords)
-                        self.try_match(die, neighbor_die)
+                        self.try_match_and_store_score(die, neighbor_die)
                     except IndexError:  # Bumped into edge of board
                         pass
                     finally:
@@ -239,3 +244,20 @@ class Board(pg.sprite.Sprite):
                     self.remove_die(die)
 
         self.draw()
+
+
+class Info():
+    def __init__(self, sprite_sheet: SpriteSheet, font: pg.font.Font):
+        self.sprite_sheet = sprite_sheet
+
+        self.color = Color()
+        self.font = font
+        self.image = self.sprite_sheet.info_bg.copy()
+
+    def update(self, score: int, level: int):
+        # TODO: Consume {level}
+        self.image.fill(self.color.black)
+        self.image.blit(self.sprite_sheet.info_bg, (0, 0))
+
+        score_text = self.font.render(str(score), False, self.color.white)
+        self.image.blit(score_text, (128 - score_text.get_width(), 39))

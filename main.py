@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pygame as pg
 
 from const import Color, BOARD_POS, INFO_POS, SCREEN_SIZE
@@ -10,7 +12,7 @@ def main():
     screen       = pg.Surface(SCREEN_SIZE / 2)
     clock        = pg.time.Clock()
     color        = Color()
-    game         = Game()
+    game         = Game(pg.font.Font(Path('assets') / 'kart.ttf', 14))
     mouse_motion = False
     running      = True
 
@@ -31,7 +33,7 @@ def main():
 
         # Draw small screen
         screen.fill(color.black)
-        screen.blit(game.sprite_sheet.info_bg, INFO_POS)
+        screen.blit(game.info.image, INFO_POS)
         screen.blit(game.board.image, BOARD_POS)
         screen.blit(game.move_queue.image, (0, 0))
 
@@ -45,6 +47,8 @@ def main():
 
 if __name__ == '__main__':
     pg.init()
+    pg.font.init()
+
     pg.display.set_caption('Dice')
 
     main()

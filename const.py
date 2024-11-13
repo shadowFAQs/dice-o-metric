@@ -11,6 +11,7 @@ SCREEN_SIZE        = pg.math.Vector2(960, 640)
 SELECTION_SIZE     = pg.math.Vector2(32, 17)
 TILE_SIZE          = pg.math.Vector2(32, 16)
 
+BASE_SCORE         = 6
 TILE_GAP           = 2
 
 MOVES = [
@@ -26,3 +27,4 @@ class Color():
         self.black       = pg.Color('#121212')
         self.red         = pg.Color('#ff5555')
         self.transparent = pg.Color('#ff00ff00')
+        self.white       = pg.Color('#fef4be')
