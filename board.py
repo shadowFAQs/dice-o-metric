@@ -20,7 +20,7 @@ class Board(pg.sprite.Sprite):
         self.num_cols         = 8
         self.num_rows         = 8
         self.score_displays   = []
-        self.scoring_move     = []  # List of int
+        self.scoring_move     = {}
 
         self.color            = Color()
         self.dice             = []
@@ -184,12 +184,10 @@ class Board(pg.sprite.Sprite):
     def spawn_dice(self):
         from game import _roll_d6
 
-        self.dice = []
-
         image = self.sprite_sheet.dice
         for row in range(self.num_rows):
             for col in range(self.num_cols):
-                if _roll_d6() > 1:
+                if _roll_d6() > 1:  # ~17% of spaces should be empty
                     animation_delay = row * 5 + col * 2 + randint(0, 8)
                     value = randint(0, 6)
                     image = self.sprite_sheet.dice[value]
@@ -223,15 +221,20 @@ class Board(pg.sprite.Sprite):
         self.score_displays.append({'counter': 60, 'image': image, 'pos': pos})
 
     def try_match_and_store_score(self, die: Dice, neighbor: Dice) -> int:
-        scoring_move = []
+        from game import _get_avg_pos
+
+        scoring_move = {'dice': [], 'pos': None}
+        positions = []
 
         if neighbor.value == die.value:
             for n, die in enumerate(
                 self.get_matching_neighbors(
                     matching_value = die.value, match=die)):
-                scoring_move.append(die.value)
+                scoring_move['dice'].append(die.value)
+                positions.append(die.pos)
                 die.kill(delay=n)
 
+            scoring_move['pos'] = _get_avg_pos(positions)
             self.scoring_move = scoring_move
             return 0
 

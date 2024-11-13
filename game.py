@@ -1,4 +1,5 @@
 from random import randint
+from statistics import mean
 
 import pygame as pg
 
@@ -18,6 +19,11 @@ def _convert_raw_positions_to_offsets(
         offsets.append(raw_positions[n] - raw_positions[n - 1])
 
     return offsets
+
+
+def _get_avg_pos(positions: list[pg.math.Vector2]) -> pg.math.Vector2:
+    x, y = mean([p.x for p in positions]), mean([p.y for p in positions])
+    return pg.math.Vector2(x, y)
 
 
 def _roll_d6() -> int:
@@ -106,15 +112,15 @@ class Game():
         return False
 
     def score_move(self):
-        die_value = self.board.scoring_move[0]
-        num_dice = len(self.board.scoring_move)
-        total = BASE_SCORE * self.level * num_dice + die_value * self.level
+        die_value = self.board.scoring_move['dice'][0]
+        num_dice = len(self.board.scoring_move['dice'])
+        total = BASE_SCORE * num_dice * 2 + die_value * self.level
         self.score += total
-        self.board.scoring_move = []
 
         self.board.spawn_score_display(
-            pg.math.Vector2(pg.mouse.get_pos()) / 2 + (-10, -34), die_value,
-            total)
+            self.board.scoring_move['pos'] + (0, -16), die_value, total)
+
+        self.board.scoring_move = []
 
     def update(self, mouse_motion: bool):
         if self.board.scoring_move:
