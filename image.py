@@ -75,3 +75,8 @@ class SpriteSheet():
         self.score_font['+'] = pg.Surface(SCORE_LETTER_SIZE, pg.SRCALPHA)
         self.score_font['+'].blit(
                 self.sprite_sheet, (10 * -SCORE_LETTER_SIZE.x, -224))
+
+        self.puzzle_complete = pg.Surface((195, 19), pg.SRCALPHA)
+        self.puzzle_complete.blit(self.sprite_sheet, (0, -240))
+        self.puzzle_won = pg.Surface((195, 19), pg.SRCALPHA)
+        self.puzzle_won.blit(self.sprite_sheet, (0, -259))

@@ -4,7 +4,7 @@ from random import randint
 import pygame as pg
 from shapely import Point, Polygon
 
-from const import Color, BOARD_POS, DIE_SPRITE_SIZE, SCREEN_SIZE, \
+from const import Color, BANNER_POS, BOARD_POS, DIE_SPRITE_SIZE, SCREEN_SIZE, \
                   SCORE_LETTER_SIZE, SCORE_LETTER_WIDTHS, TILE_GAP, TILE_SIZE
 from dice import Dice
 from image import SpriteSheet
@@ -22,6 +22,7 @@ class Board(pg.sprite.Sprite):
         self.score_displays   = []
         self.scoring_move     = {}
 
+        self.banner           = None
         self.color            = Color()
         self.dice             = []
         self.shadows          = []
@@ -54,6 +55,10 @@ class Board(pg.sprite.Sprite):
 
         for score_display in self.score_displays:
             self.image.blit(score_display['image'], score_display['pos'])
+
+        if self.banner:
+            self.image.blit(
+                getattr(self.sprite_sheet, self.banner), (BANNER_POS))
 
     def get_all_dice(self, sort: bool = False) -> list[Dice]:
         """Returns flattened list from 2D list"""

@@ -166,6 +166,6 @@ class Game():
     def win(self, status: int):
         self.paused = True
         if status == 1:
-            print('Mission complete')
+            self.board.banner = 'puzzle_complete'
         else:
-            print('Mission accomplished!')
+            self.board.banner = 'puzzle_won'

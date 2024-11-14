@@ -2,6 +2,7 @@ import pygame as pg
 
 
 ARROW_SIZE         = pg.math.Vector2(64, 64)
+BANNER_POS         = pg.math.Vector2(63, 90)
 BOARD_POS          = pg.math.Vector2(8, 8)
 DIE_SPRITE_SIZE    = pg.math.Vector2(32, 36)
 INFO_POS           = BOARD_POS + (328, 28)
