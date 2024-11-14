@@ -72,6 +72,18 @@ class Game():
 
         return 1
 
+    def choose_button(self):
+        button_index = self.board.choose_button()
+
+        if button_index:
+            if 'puzzle' in self.board.banner:
+                if button_index == 0:
+                    self.load_next_level()
+                else:
+                    self.new_game()
+            else:
+                self.new_game()
+
     def choose_die(self):
         self.board.choose_die_under_mouse()
         if self.board.chosen_die:
@@ -131,6 +143,12 @@ class Game():
 
         return empty_coords
 
+    def handle_click(self):
+        if self.board.banner:  # Win/loss screen is up
+            self.choose_button()
+        else:
+            self.choose_die()
+
     def is_animating(self) -> bool:
         if self.move_queue.is_animating():
             return True
@@ -140,6 +158,19 @@ class Game():
                 return True
 
         return False
+
+    def load_next_level(self):
+        self.new_board()
+
+        self.level += 1
+        self.num_moves = 0
+        self.paused = False
+
+    def new_board(self):
+        self.board = Board(self.sprite_sheet)
+
+    def new_game(self):
+        ...
 
     def score_move(self):
         die_value = self.board.scoring_move['dice'][0]

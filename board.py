@@ -38,6 +38,27 @@ class Board(pg.sprite.Sprite):
 
         self.spawn_dice()
 
+    def choose_button(self):
+        mouse_pos = self.get_mouse_pos()
+        if self.rect.collidepoint(mouse_pos):
+            mouse_point = Point(mouse_pos)
+
+            hitbox = Polygon(
+                (BTN_POS_HIGH, BTN_POS_HIGH + (105, 0),
+                 BTN_POS_HIGH + (105, 23), BTN_POS_HIGH + (0, 23))
+            )
+            if hitbox.contains(mouse_point):
+                return 0
+
+            hitbox = Polygon(
+                (BTN_POS_LOW, BTN_POS_LOW + (105, 0),
+                 BTN_POS_LOW + (105, 23), BTN_POS_LOW + (0, 23))
+            )
+            if hitbox.contains(mouse_point):
+                return 1
+
+        return None
+
     def choose_die_under_mouse(self):
         self.chosen_die = self.get_hovered_die()
 
