@@ -4,10 +4,12 @@ from random import randint
 import pygame as pg
 from shapely import Point, Polygon
 
-from const import Color, BANNER_POS, BOARD_POS, DIE_SPRITE_SIZE, SCREEN_SIZE, \
-                  SCORE_LETTER_SIZE, SCORE_LETTER_WIDTHS, TILE_GAP, TILE_SIZE
+from const import Color, BANNER_POS, BOARD_POS, BTN_POS_LOW, BTN_POS_HIGH, \
+                  DIE_SPRITE_SIZE, SCREEN_SIZE, SCORE_LETTER_SIZE, \
+                  SCORE_LETTER_WIDTHS, TILE_GAP, TILE_SIZE
 from dice import Dice
 from image import SpriteSheet
+from move_queue import Move
 
 
 class Board(pg.sprite.Sprite):
@@ -22,12 +24,13 @@ class Board(pg.sprite.Sprite):
         self.score_displays   = []
         self.scoring_move     = {}
 
-        self.banner           = None
-        self.color            = Color()
-        self.dice             = []
-        self.shadows          = []
-        self.highlight_coords = pg.math.Vector2(0, 0)
-        self.show_highlight   = 0  # [-1, 0, 1]
+        self.banner            = None
+        self.color             = Color()
+        self.dice              = []
+        self.legal_move_exists = False
+        self.shadows           = []
+        self.highlight_coords  = pg.math.Vector2(0, 0)
+        self.show_highlight    = 0  # [-1, 0, 1]
 
         self.background_image = pg.image.load(Path('img') / 'bg.bmp')
         self.rect = self.background_image.get_rect()
@@ -59,6 +62,14 @@ class Board(pg.sprite.Sprite):
         if self.banner:
             self.image.blit(
                 getattr(self.sprite_sheet, self.banner), (BANNER_POS))
+
+            if self.banner in ('puzzle_complete', 'puzzle_won'):
+                self.image.blit(
+                    self.sprite_sheet.continue_button, BTN_POS_HIGH)
+                self.image.blit(self.sprite_sheet.restart_button, BTN_POS_LOW)
+            else:
+                self.image.blit(self.sprite_sheet.restart_button, BTN_POS_HIGH)
+
 
     def get_all_dice(self, sort: bool = False) -> list[Dice]:
         """Returns flattened list from 2D list"""
@@ -251,9 +262,11 @@ class Board(pg.sprite.Sprite):
 
         return 1
 
-    def update(self, mouse_motion: bool):
+    def update(self, mouse_motion: bool, active_move: Move):
         if mouse_motion:
             self.highlight_hovered_die()
+
+        self.legal_move_exists = False
 
         for die in self.get_all_dice():
             die.update()
@@ -273,6 +286,19 @@ class Board(pg.sprite.Sprite):
 
                 elif die.value == -1:
                     self.remove_die(die)
+
+            if not self.legal_move_exists:
+                try:
+                    coords = self.get_coords_in_direction(
+                        die.row, die.col, active_move.axis, active_move.value)
+                    neighbor_die = self.get_die_from_coords(*coords)
+                    if neighbor_die:
+                        if neighbor_die.value == die.value:
+                            self.legal_move_exists = True
+                    else:
+                        self.legal_move_exists = True
+                except IndexError:
+                    pass  # Edge of board
 
         if self.score_displays:
             self.score_displays = [s for s in self.score_displays \

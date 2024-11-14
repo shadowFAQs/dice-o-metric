@@ -48,10 +48,14 @@ class Game():
     def check_win(self) -> int:
         """
         Returns:
-            0: At least 1 possible match remains (no win)
+            0: At least 1 possible match remains (game continues)
             1: Some dice remain, but no possible moves (misson complete)
-            2: No dice remain (mission accomplished)
+            2: No non-rock dice remain (mission accomplished)
+            3: No legal moves remain (game over)
         """
+        if not self.board.legal_move_exists:
+            return 3
+
         counts = [0] * 7
         for die in self.board.get_all_dice():
             counts[die.value] += 1
@@ -152,7 +156,8 @@ class Game():
         if self.board.scoring_move:
             self.score_move()
 
-        self.board.update(mouse_motion)
+        self.board.update(mouse_motion, self.move_queue.get_active_move())
+
         self.move_queue.update()
         self.info.update(self.score, self.level, self.num_moves)
 
@@ -167,5 +172,7 @@ class Game():
         self.paused = True
         if status == 1:
             self.board.banner = 'puzzle_complete'
-        else:
+        elif status == 2:
             self.board.banner = 'puzzle_won'
+        elif status == 3:
+            self.board.banner = 'game_over'

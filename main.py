@@ -27,7 +27,8 @@ def main():
             elif event.type == pg.MOUSEBUTTONDOWN:
                 if event.button == 1:  # Left click
                     if not game.is_animating():
-                        game.choose_die()
+                        # game.choose_die()
+                        game.win(3)
 
         game.update(mouse_motion)
 

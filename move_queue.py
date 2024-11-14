@@ -139,13 +139,5 @@ class Queue():
         self.moves.append(move)
 
     def update(self):
-        counter = 0
-        while not self.will_have_legal_move() and counter < 3:
-            self.moves[self.active_move_index].rotate()
-            counter += 1
-
         self.animate()
         self.draw()
-
-    def will_have_legal_move(self):
-        return True  # TODO: Make me real like Amy Lee

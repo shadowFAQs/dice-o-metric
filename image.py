@@ -80,3 +80,11 @@ class SpriteSheet():
         self.puzzle_complete.blit(self.sprite_sheet, (0, -240))
         self.puzzle_won = pg.Surface((195, 19), pg.SRCALPHA)
         self.puzzle_won.blit(self.sprite_sheet, (0, -259))
+        self.game_over = pg.Surface((195, 19), pg.SRCALPHA)
+        self.game_over.blit(self.sprite_sheet, (0, -278))
+
+        self.continue_button = pg.Surface((105, 23), pg.SRCALPHA)
+        self.continue_button.blit(self.sprite_sheet, (-208, -224))
+
+        self.restart_button = pg.Surface((105, 23), pg.SRCALPHA)
+        self.restart_button.blit(self.sprite_sheet, (-208, -247))
