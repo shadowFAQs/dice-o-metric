@@ -8,15 +8,18 @@ from image import SpriteSheet
 
 
 class Move():
-    def __init__(self, name: str, axis: str, value: int, pos: pg.math.Vector2):
-        self.name  = name   # [ne, nw, se, sw]
-        self.axis  = axis   # [row, col]
-        self.value = value  # [-1, 1]
-        self.pos   = pos
+    def __init__(self, name: str, axis: str, value: int, pos: pg.math.Vector2,
+                 sprite_sheet: SpriteSheet):
+        self.name         = name   # [ne, nw, se, sw]
+        self.axis         = axis   # [row, col]
+        self.value        = value  # [-1, 1]
+        self.pos          = pos
+        self.sprite_sheet = sprite_sheet
 
         self.active_image = None
         self.base_image   = None
         self.dark_image   = None
+        self.set_images()
 
     def __repr__(self) -> str:
         operator = '+' if self.value > 0 else ''
@@ -26,6 +29,24 @@ class Move():
         self.active_image = self.base_image
 
     def deactivate(self):
+        self.active_image = self.dark_image
+
+    def rotate(self):
+        index = MOVES.index([m for m in MOVES if m[0] == self.name][0])
+        if index == 3:
+            index = 1
+        else:
+            index += 1
+
+        self.name = MOVES[index][0]
+        self.axis = MOVES[index][1]
+        self.value = MOVES[index][2]
+
+        self.set_images()
+
+    def set_images(self):
+        self.base_image = self.sprite_sheet.arrows[self.name]
+        self.dark_image = self.sprite_sheet.dark_arrows[self.name]
         self.active_image = self.dark_image
 
 
@@ -111,13 +132,20 @@ class Queue():
 
     def spawn_move(self):
         num_moves = len(self.moves)
-        move = Move(*MOVES[randint(0, 3)], pos=(self.move_width * num_moves, 0))
-        move.base_image = self.sprite_sheet.arrows[move.name]
-        move.dark_image = self.sprite_sheet.dark_arrows[move.name]
-        move.active_image = move.dark_image
+        move = Move(
+            *MOVES[randint(0, 3)], pos=(self.move_width * num_moves, 0),
+            sprite_sheet=self.sprite_sheet)
 
         self.moves.append(move)
 
     def update(self):
+        counter = 0
+        while not self.will_have_legal_move() and counter < 3:
+            self.moves[self.active_move_index].rotate()
+            counter += 1
+
         self.animate()
         self.draw()
+
+    def will_have_legal_move(self):
+        return True  # TODO: Make me real like Amy Lee
