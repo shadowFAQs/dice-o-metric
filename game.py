@@ -75,7 +75,7 @@ class Game():
     def choose_button(self):
         button_index = self.board.choose_button()
 
-        if button_index:
+        if button_index is not None:  # Could return 0
             if 'puzzle' in self.board.banner:
                 if button_index == 0:
                     self.load_next_level()
@@ -92,6 +92,7 @@ class Game():
                 if status == 0:  # Successful move
                     self.move_queue.advance()
                     self.num_moves += 1
+                    self.board.legal_move_exists = False
 
     def execute_move(self, die: Dice) -> int:
         """Main game logic"""

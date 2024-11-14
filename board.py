@@ -287,8 +287,6 @@ class Board(pg.sprite.Sprite):
         if mouse_motion:
             self.highlight_hovered_die()
 
-        self.legal_move_exists = False
-
         for die in self.get_all_dice():
             die.update()
 
@@ -309,17 +307,19 @@ class Board(pg.sprite.Sprite):
                     self.remove_die(die)
 
             if not self.legal_move_exists:
-                try:
-                    coords = self.get_coords_in_direction(
-                        die.row, die.col, active_move.axis, active_move.value)
-                    neighbor_die = self.get_die_from_coords(*coords)
-                    if neighbor_die:
-                        if neighbor_die.value == die.value:
+                if die.value:
+                    try:
+                        coords = self.get_coords_in_direction(
+                            die.row, die.col, active_move.axis,
+                            active_move.value)
+                        neighbor_die = self.get_die_from_coords(*coords)
+                        if neighbor_die:
+                            if neighbor_die.value and neighbor_die.value == die.value:
+                                    self.legal_move_exists = True
+                        else:
                             self.legal_move_exists = True
-                    else:
-                        self.legal_move_exists = True
-                except IndexError:
-                    pass  # Edge of board
+                    except IndexError:
+                        pass  # Edge of board
 
         if self.score_displays:
             self.score_displays = [s for s in self.score_displays \
