@@ -171,7 +171,13 @@ class Game():
         self.board = Board(self.sprite_sheet)
 
     def new_game(self):
-        ...
+        self.new_board()
+
+        self.level = 1
+        self.move_queue = Queue(self.sprite_sheet)
+        self.num_moves = 0
+        self.paused = False
+        self.score = 0
 
     def score_move(self):
         die_value = self.board.scoring_move['dice'][0]
@@ -188,7 +194,8 @@ class Game():
         if self.board.scoring_move:
             self.score_move()
 
-        self.board.update(mouse_motion, self.move_queue.get_active_move())
+        self.board.update(mouse_motion, self.move_queue.get_active_move(),
+                          self.is_animating())
 
         self.move_queue.update()
         self.info.update(self.score, self.level, self.num_moves)

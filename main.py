@@ -54,7 +54,6 @@ if __name__ == '__main__':
     main()
 
     # TODO:
-        # Don't show hover highlight if board is still animating (and move can't be made yet)
         # Info: Show counts of each die type remaining
         # Info: Best match count
-        # If the previous 3 moves were the same, the next one must be different
+        # Restart button

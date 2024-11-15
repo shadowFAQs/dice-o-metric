@@ -283,8 +283,9 @@ class Board(pg.sprite.Sprite):
 
         return 1
 
-    def update(self, mouse_motion: bool, active_move: Move):
-        if mouse_motion:
+    def update(self, mouse_motion: bool, active_move: Move,
+               game_animation: bool):
+        if mouse_motion and not game_animation:
             self.highlight_hovered_die()
 
         for die in self.get_all_dice():
@@ -314,8 +315,8 @@ class Board(pg.sprite.Sprite):
                             active_move.value)
                         neighbor_die = self.get_die_from_coords(*coords)
                         if neighbor_die:
-                            if neighbor_die.value and neighbor_die.value == die.value:
-                                    self.legal_move_exists = True
+                            if neighbor_die.value == die.value > 0:  # Exclude
+                                    self.legal_move_exists = True    # 0 & -1
                         else:
                             self.legal_move_exists = True
                     except IndexError:

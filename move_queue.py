@@ -136,6 +136,13 @@ class Queue():
             *MOVES[randint(0, 3)], pos=(self.move_width * num_moves, 0),
             sprite_sheet=self.sprite_sheet)
 
+        # Prevent 4-in-a-row of the same move type
+        # Can't use len(moves) below because moves may have Nones in it
+        if len([m for m in self.moves if m]) >= 3:
+            if len(set([m.name for m in self.moves[-3:]])) == 1 \
+                and self.moves[-1].name == move.name:
+                move.rotate()
+
         self.moves.append(move)
 
     def update(self):
