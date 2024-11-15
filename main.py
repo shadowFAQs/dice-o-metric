@@ -52,7 +52,3 @@ if __name__ == '__main__':
     pg.display.set_caption('Dice')
 
     main()
-
-    # TODO:
-        # Restart button
-        # Fix slide speed
