@@ -13,7 +13,7 @@ from move_queue import Move
 
 
 class Board(pg.sprite.Sprite):
-    def __init__(self, sprite_sheet: SpriteSheet):
+    def __init__(self, sprite_sheet: SpriteSheet, base_path: Path):
         pg.sprite.Sprite.__init__(self)
 
         self.sprite_sheet     = sprite_sheet
@@ -32,7 +32,7 @@ class Board(pg.sprite.Sprite):
         self.highlight_coords  = pg.math.Vector2(0, 0)
         self.show_highlight    = 0  # [-1, 0, 1]
 
-        self.background_image = pg.image.load(Path('img') / 'bg.bmp')
+        self.background_image = pg.image.load(base_path / 'img' / 'bg.bmp')
         self.rect = self.background_image.get_rect()
         self.image = pg.Surface(self.rect.size, pg.SRCALPHA)  # (320, 304)
 

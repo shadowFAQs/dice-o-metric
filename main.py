@@ -1,3 +1,5 @@
+import os
+
 from pathlib import Path
 
 import pygame as pg
@@ -8,11 +10,13 @@ from game import Game
 
 
 def main():
+    base_path  = Path(os.path.dirname(os.path.abspath(__file__)))
+
     screen_2x    = pg.display.set_mode(SCREEN_SIZE)
     screen       = pg.Surface(SCREEN_SIZE / 2)
     clock        = pg.time.Clock()
     color        = Color()
-    game         = Game(pg.font.Font(Path('assets') / 'kart.ttf', 14))
+    game         = Game(base_path)
     mouse_motion = False
     running      = True
 

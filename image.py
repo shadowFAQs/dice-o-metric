@@ -7,12 +7,11 @@ from const import Color, ARROW_SIZE, DIE_SPRITE_SIZE, MINI_DIE_SIZE, \
 
 
 class SpriteSheet():
-    def __init__(self):
-        base_filepath = Path('img') / 'sprites.bmp'
-
+    def __init__(self, base_path: Path):
         color = Color()
 
-        self.sprite_sheet = pg.image.load(base_filepath).convert_alpha()
+        self.sprite_sheet = pg.image.load(
+            base_path / 'img' / 'sprites.bmp').convert_alpha()
 
         self.dice = dict()
         self.dice_ghosts = dict()
@@ -71,7 +70,7 @@ class SpriteSheet():
         for n in range(5):
             self.queue_track.blit(queue_track, (96 * n, 0))
 
-        self.info_bg = pg.image.load(Path('img') / 'info_bg.bmp')
+        self.info_bg = pg.image.load(base_path / 'img' / 'info_bg.bmp')
 
         self.score_font = {}
         for n in range(10):

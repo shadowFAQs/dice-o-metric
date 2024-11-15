@@ -1,3 +1,4 @@
+from pathlib import Path
 from random import randint
 from statistics import mean
 
@@ -35,10 +36,11 @@ def _sort_by_z_index(d: Dice) -> int:
 
 
 class Game():
-    def __init__(self, font: pg.font.Font):
-        self.sprite_sheet = SpriteSheet()
-        self.board        = Board(self.sprite_sheet)
-        self.info         = Info(self.sprite_sheet, font)
+    def __init__(self, base_path: Path):
+        self.sprite_sheet = SpriteSheet(base_path)
+        self.board        = Board(self.sprite_sheet, base_path)
+        self.info         = Info(self.sprite_sheet,
+            pg.font.Font(base_path / 'assets' / 'kart.ttf', 14))
         self.level        = 1
         self.most_dice    = 0
         self.move_queue   = Queue(self.sprite_sheet)
