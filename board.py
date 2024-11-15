@@ -5,8 +5,8 @@ import pygame as pg
 from shapely import Point, Polygon
 
 from const import Color, BANNER_POS, BOARD_POS, BTN_POS_LOW, BTN_POS_HIGH, \
-                  DIE_SPRITE_SIZE, SCREEN_SIZE, SCORE_LETTER_SIZE, \
-                  SCORE_LETTER_WIDTHS, TILE_GAP, TILE_SIZE
+                  DIE_SPRITE_SIZE, MINI_DIE_SIZE, SCREEN_SIZE, \
+                  SCORE_LETTER_SIZE, SCORE_LETTER_WIDTHS, TILE_GAP, TILE_SIZE
 from dice import Dice
 from image import SpriteSheet
 from move_queue import Move
@@ -339,10 +339,36 @@ class Info():
         self.font = font
         self.image = self.sprite_sheet.info_bg.copy()
 
-    def update(self, score: int, level: int, moves: int):
+    @staticmethod
+    def count_dice_by_value(dice: list[Dice]) -> dict:
+        counts = {}
+        for die in dice:
+            if die.value > 0:
+                if die.value not in counts:
+                    counts[die.value] = 1
+                else:
+                    counts[die.value] += 1
+
+        return counts
+
+    def update(self, score: int, level: int, moves: int, best: int,
+               dice: list[Dice]):
         self.image.fill(self.color.black)
         self.image.blit(self.sprite_sheet.info_bg, (0, 0))
 
         for n, text in enumerate([score, level, moves]):
             image = self.font.render(str(text), False, self.color.white)
             self.image.blit(image, (128 - image.get_width(), 40 + n * 30))
+
+        best_img = self.font.render(f'{best}     dice', False, self.color.white)
+        self.image.blit(best_img, (128 - best_img.get_width(), 130))
+
+        # Last minute hacky stuff here
+        horizontal_space = self.image.get_width() - 8
+        counts = self.count_dice_by_value(dice)
+        for value in counts:
+            num_dice_by_value = counts[value]
+            horizontal_slice = min(horizontal_space // num_dice_by_value, MINI_DIE_SIZE.x + 2)
+            for n in range(num_dice_by_value):
+                coords = (horizontal_slice * n + 8, (MINI_DIE_SIZE.y + 8) * value + 150)
+                self.image.blit(self.sprite_sheet.mini_dice[value - 1], coords)

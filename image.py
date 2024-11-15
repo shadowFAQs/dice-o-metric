@@ -2,8 +2,8 @@ from pathlib import Path
 
 import pygame as pg
 
-from const import Color, ARROW_SIZE, DIE_SPRITE_SIZE, SCORE_LETTER_SIZE, \
-                  SCREEN_SIZE, SELECTION_SIZE
+from const import Color, ARROW_SIZE, DIE_SPRITE_SIZE, MINI_DIE_SIZE, \
+                  SCORE_LETTER_SIZE, SCREEN_SIZE, SELECTION_SIZE
 
 
 class SpriteSheet():
@@ -23,6 +23,12 @@ class SpriteSheet():
             self.dice_ghosts[n] = pg.Surface(DIE_SPRITE_SIZE, pg.SRCALPHA)
             self.dice_ghosts[n].blit(
                 self.sprite_sheet, (DIE_SPRITE_SIZE.x * -n, -48))
+
+        self.mini_dice = []
+        for n in range(6):
+            die = pg.Surface(MINI_DIE_SIZE, pg.SRCALPHA)
+            die.blit(self.sprite_sheet, (16 * -n - 224, -32))
+            self.mini_dice.append(die)
 
         self.dice_flash = {}
         self.dice_flash['solid'] = pg.Surface(DIE_SPRITE_SIZE, pg.SRCALPHA)

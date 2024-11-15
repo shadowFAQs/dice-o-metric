@@ -40,10 +40,14 @@ class Game():
         self.board        = Board(self.sprite_sheet)
         self.info         = Info(self.sprite_sheet, font)
         self.level        = 1
+        self.most_dice    = 0
         self.move_queue   = Queue(self.sprite_sheet)
         self.num_moves    = 0
         self.paused       = False
         self.score        = 0
+
+    def check_best_move(self, num_dice: int):
+        self.most_dice = max(self.most_dice, num_dice)
 
     def check_win(self) -> int:
         """
@@ -58,7 +62,10 @@ class Game():
 
         counts = [0] * 7
         for die in self.board.get_all_dice():
-            counts[die.value] += 1
+            try:
+                counts[die.value] += 1
+            except IndexError:
+                raise RuntimeError(f'IndexError from {die}')
 
         try:
             counts.pop(0)  # Ignore "rock" dice
@@ -174,6 +181,7 @@ class Game():
         self.new_board()
 
         self.level = 1
+        self.most_dice = 0
         self.move_queue = Queue(self.sprite_sheet)
         self.num_moves = 0
         self.paused = False
@@ -184,6 +192,8 @@ class Game():
         num_dice = len(self.board.scoring_move['dice'])
         total = BASE_SCORE * num_dice * 2 + die_value * self.level
         self.score += total
+
+        self.check_best_move(num_dice)
 
         self.board.spawn_score_display(
             self.board.scoring_move['pos'] + (0, -16), die_value, total)
@@ -198,7 +208,8 @@ class Game():
                           self.is_animating())
 
         self.move_queue.update()
-        self.info.update(self.score, self.level, self.num_moves)
+        self.info.update(self.score, self.level, self.num_moves, self.most_dice,
+                         self.board.dice)
 
         if self.paused:
             return

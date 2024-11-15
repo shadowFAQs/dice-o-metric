@@ -54,6 +54,5 @@ if __name__ == '__main__':
     main()
 
     # TODO:
-        # Info: Show counts of each die type remaining
-        # Info: Best match count
         # Restart button
+        # Fix slide speed
