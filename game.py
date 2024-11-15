@@ -152,10 +152,14 @@ class Game():
         return empty_coords
 
     def handle_click(self):
-        if self.board.banner:  # Win/loss screen is up
-            self.choose_button()
+        if self.board.rect.collidepoint(self.board.get_mouse_pos()):
+            if self.board.banner:  # Win/loss screen is up
+                self.choose_button()
+            else:
+                self.choose_die()
         else:
-            self.choose_die()
+            if self.info.try_click_new_game(self.board.get_mouse_pos()):
+                self.new_game()
 
     def is_animating(self) -> bool:
         if self.move_queue.is_animating():

@@ -5,7 +5,7 @@ import pygame as pg
 from shapely import Point, Polygon
 
 from const import Color, BANNER_POS, BOARD_POS, BTN_POS_LOW, BTN_POS_HIGH, \
-                  DIE_SPRITE_SIZE, MINI_DIE_SIZE, SCREEN_SIZE, \
+                  DIE_SPRITE_SIZE, INFO_POS, MINI_DIE_SIZE, SCREEN_SIZE, \
                   SCORE_LETTER_SIZE, SCORE_LETTER_WIDTHS, TILE_GAP, TILE_SIZE
 from dice import Dice
 from image import SpriteSheet
@@ -90,7 +90,6 @@ class Board(pg.sprite.Sprite):
                 self.image.blit(self.sprite_sheet.restart_button, BTN_POS_LOW)
             else:
                 self.image.blit(self.sprite_sheet.restart_button, BTN_POS_HIGH)
-
 
     def get_all_dice(self, sort: bool = False) -> list[Dice]:
         """Returns flattened list from 2D list"""
@@ -351,6 +350,19 @@ class Info():
 
         return counts
 
+    def try_click_new_game(self, mouse_pos: pg.math.Vector2) -> bool:
+        dims = pg.math.Vector2(66, 12)
+        topleft = pg.math.Vector2(34, 258)
+        new_game_poly = Polygon(
+            (topleft,
+             topleft + (dims.x, 0),
+             topleft + dims,
+             topleft + (0, dims.y))
+        )
+
+        mouse_pos_within_info = Point(mouse_pos - INFO_POS + (8, 8))
+        return new_game_poly.contains(mouse_pos_within_info)
+
     def update(self, score: int, level: int, moves: int, best: int,
                dice: list[Dice]):
         self.image.fill(self.color.black)
@@ -358,10 +370,12 @@ class Info():
 
         for n, text in enumerate([score, level, moves]):
             image = self.font.render(str(text), False, self.color.white)
-            self.image.blit(image, (128 - image.get_width(), 40 + n * 30))
+            self.image.blit(image, (128 - image.get_width(), 33 + n * 26))
 
         best_img = self.font.render(f'{best}     dice', False, self.color.white)
-        self.image.blit(best_img, (128 - best_img.get_width(), 130))
+        self.image.blit(best_img, (128 - best_img.get_width(), 111))
+
+        self.image.blit(self.sprite_sheet.new_game_button, (34, 258))
 
         # Last minute hacky stuff here
         horizontal_space = self.image.get_width() - 8
@@ -370,5 +384,5 @@ class Info():
             num_dice_by_value = counts[value]
             horizontal_slice = min(horizontal_space // num_dice_by_value, MINI_DIE_SIZE.x + 2)
             for n in range(num_dice_by_value):
-                coords = (horizontal_slice * n + 8, (MINI_DIE_SIZE.y + 8) * value + 150)
+                coords = (horizontal_slice * n + 8, (MINI_DIE_SIZE.y + 8) * value + 131)
                 self.image.blit(self.sprite_sheet.mini_dice[value - 1], coords)

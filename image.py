@@ -94,3 +94,6 @@ class SpriteSheet():
 
         self.restart_button = pg.Surface((105, 23), pg.SRCALPHA)
         self.restart_button.blit(self.sprite_sheet, (-208, -247))
+
+        self.new_game_button = pg.Surface((66, 12), pg.SRCALPHA)
+        self.new_game_button.blit(self.sprite_sheet, (-208, -272))
