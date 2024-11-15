@@ -49,6 +49,6 @@ if __name__ == '__main__':
     pg.init()
     pg.font.init()
 
-    pg.display.set_caption('Dice')
+    pg.display.set_caption('Dice-o-metric')
 
     main()
